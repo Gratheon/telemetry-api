@@ -1,10 +1,15 @@
 from flask import Flask, request
 from influxdb import InfluxDBClient
+import os
 
 app = Flask(__name__)
 
-client = InfluxDBClient(host='localhost', port=8086)
-client.switch_database('beehive_data')
+influxdb_host = os.environ.get('INFLUXDB_HOST', 'localhost')
+influxdb_port = int(os.environ.get('INFLUXDB_PORT', 8086))
+influxdb_database = os.environ.get('INFLUXDB_DATABASE', 'beehive_data')
+
+client = InfluxDBClient(host=influxdb_host, port=influxdb_port)
+client.switch_database(influxdb_database)
 
 # Define the API endpoint to receive telemetry data
 @app.route('/telemetry', methods=['POST'])
@@ -29,4 +34,4 @@ def log_telemetry():
 
 # Run the Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
