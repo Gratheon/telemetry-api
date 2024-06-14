@@ -1,4 +1,4 @@
-# telemetry-api [TODO]
+# telemetry-api
 Backend service to log beehive timeseries data
 
 ## Architecture
