@@ -13,4 +13,4 @@ EXPOSE 5000
 
 ENV PORT=5000
 
-CMD ["node","telemtry.js"]
+CMD ["node","telemetry.js"]
