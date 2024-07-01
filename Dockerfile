@@ -1,13 +1,16 @@
-FROM python:3.9-slim
+FROM node:20.13.1-bookworm-slim
 
 WORKDIR /telemetry-api
 
-COPY requirements.txt requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package*.json ./
+
+RUN npm install
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["python","telemetry.py"]
+ENV PORT=5000
+
+CMD ["node","telemetry.js"]

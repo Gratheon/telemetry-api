@@ -1,0 +1,22 @@
+{
+  "name": "telemetry-api",
+  "version": "1.0.0",
+  "description": "node.js app for managing the telemtry endpoint",
+  "main": "telemetry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedDaoudi-u/telemetry-api.git"
+  },
+  "author": "Ahmed Daoudi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahmedDaoudi-u/telemetry-api/issues"
+  },
+  "homepage": "https://github.com/ahmedDaoudi-u/telemetry-api#readme",
+  "dependencies": {
+    "express": "4.19.2"
+  }
+}
