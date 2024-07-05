@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  telemetry-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "node /app/app/telemetry-api.js"
+    ports:
+      - 8600:8600
+    environment:
+      - PORT=8600
+      - ENV_ID=prod
+      - DD_ENV=prod
+      - DD_PROFILING_ENABLED=true
+      - INFLUXDB_HOST=influxdb
+      - INFLUXDB_PORT=8086
+      - INFLUXDB_DATABASE=beehive_data
+    restart: always
+    network_mode: host

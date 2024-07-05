@@ -1,22 +1,42 @@
 {
   "name": "telemetry-api",
   "version": "1.0.0",
-  "description": "node.js app for managing the telemtry endpoint",
-  "main": "telemetry.js",
+  "description": "Logging timeseries IoT data into a database",
+  "dependencies": {
+    "@apollo/federation": "0.38.1",
+    "@sentry/integrations": "7.69.0",
+    "@sentry/node": "7.69.0",
+    "apollo-server-core": "3.4.0",
+    "apollo-server-fastify": "3.4.0",
+    "cross-fetch": "^4.0.0",
+    "dd-trace": "4.16.0",
+    "fastify": "3.29.5",
+    "fastify-raw-body": "3.2.0",
+    "graphql": "15.8.0",
+    "influx": "^5.9.3",
+    "sha1": "^1.1.1",
+    "winston": "3.13.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p ./src/config/tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ENV_ID=dev nodemon app/telemetry-api.js",
+    "start": "ENV_ID=prod node app/telemetry-api.js",
+    "deploy": "make"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ahmedDaoudi-u/telemetry-api.git"
+    "url": "git+ssh://git@github.com/gratheon/telemetry-api.git"
   },
-  "author": "Ahmed Daoudi",
-  "license": "ISC",
+  "author": "",
+  "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/ahmedDaoudi-u/telemetry-api/issues"
+    "url": "https://github.com/gratheon/telemetry-api/issues"
   },
-  "homepage": "https://github.com/ahmedDaoudi-u/telemetry-api#readme",
-  "dependencies": {
-    "express": "4.19.2"
+  "homepage": "https://github.com/gratheon/telemetry-api#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "tsc-watch": "^6.0.4",
+    "typescript": "^5.2.2"
   }
 }

@@ -1,0 +1,7 @@
+scalar JSON
+scalar DateTime
+scalar URL
+
+type Query {
+	telemetry: String
+}

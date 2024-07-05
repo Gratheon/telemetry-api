@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  telemetry-api:
+    build:
+      dockerfile: Dockerfile
+    command:
+      ./node_modules/.bin/tsc-watch --project ./src/config/tsconfig.json --onSuccess "node /app/app/telemetry-api.js"
+    environment:
+      - PORT=8600
+      - ENV_ID=dev
+      - DD_ENV=dev
+      - DD_PROFILING_ENABLED=true
+      - INFLUXDB_HOST=influxdb
+      - INFLUXDB_PORT=8086
+      - INFLUXDB_DATABASE=beehive_data
+    tty: true
+    ports:
+      - 8600:8600
+    volumes:
+      - .:/app/
+    restart: always
+    network_mode: bridge
+    networks:
+      - gratheon
+networks:
+  gratheon:

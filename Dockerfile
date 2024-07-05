@@ -1,16 +1,10 @@
 FROM node:20.13.1-bookworm-slim
 
-WORKDIR /telemetry-api
+WORKDIR /app
 
-
-COPY package*.json ./
+COPY . /app/
 
 RUN npm install
-
-COPY . .
+RUN npm run build
 
 EXPOSE 5000
-
-ENV PORT=5000
-
-CMD ["node","telemetry.js"]

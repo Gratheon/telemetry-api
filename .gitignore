@@ -1,3 +1,7 @@
-/node_modules
-
+node_modules
+.dccache
 .idea
+src/config/config.dev.ts
+src/config/config.prod.ts
+migrations/004-add-user.sql
+app
