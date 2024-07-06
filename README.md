@@ -15,6 +15,9 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 - vibrations
 - wind speed
 
+![Screenshot 2024-07-06 at 03 38 52](https://github.com/Gratheon/telemetry-api/assets/445122/56622ecb-95bc-46ed-a23a-e2dd18feeeec)
+
+
 ## URLs
 | URL | Description |
 | --- | --- |
@@ -24,7 +27,7 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 ## API
 | URL | Method | Description |
 | --- | --- | --- |
-| /metric | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service |
+| /metric/:hiveId | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service |
 | /graphql | POST | Federated graphql API endpoint. Used to fetch data from web-app with authorization checks in graphql-router |
 
 ## Installation & development
