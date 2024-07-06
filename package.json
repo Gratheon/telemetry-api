@@ -4,6 +4,7 @@
   "description": "Logging timeseries IoT data into a database",
   "dependencies": {
     "@apollo/federation": "0.38.1",
+    "@influxdata/influxdb-client": "1.33.2",
     "@sentry/integrations": "7.69.0",
     "@sentry/node": "7.69.0",
     "apollo-server-core": "3.4.0",
@@ -13,7 +14,6 @@
     "fastify": "3.29.5",
     "fastify-raw-body": "3.2.0",
     "graphql": "15.8.0",
-    "influx": "^5.9.3",
     "sha1": "^1.1.1",
     "winston": "3.13.0"
   },

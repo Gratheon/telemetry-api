@@ -12,7 +12,8 @@ services:
       - DD_PROFILING_ENABLED=true
       - INFLUXDB_HOST=influxdb
       - INFLUXDB_PORT=8086
-      - INFLUXDB_DATABASE=beehive_data
+      - INFLUXDB_DATABASE=beehive_metrics
+      - INFLUXDB_TOKEN=O8_6qd5t_0ydiaQCZWJ_EjB177ByAdedTm8dW6SwX2nEb7AMN_MFk-gIDr_kS9Ym_kDY3CHXi3sz6Iuv-an12A==
     tty: true
     ports:
       - 8600:8600

@@ -1,9 +1,11 @@
 // global dependencies
 import fastifyRawBody from 'fastify-raw-body';
+import { Point } from '@influxdata/influxdb-client'
 
 // local dependencies
 import { logger } from './logger';
 // import config from './config/index';
+
 
 import { initInflux } from './models/influx';
 
@@ -17,37 +19,40 @@ export function registerRestAPI(app) {
 		routes: [] // array of routes, **`global`** will be ignored, wildcard routes not supported
 	})
 
-	app.post('/metric', {
+	app.post('/metric/:hiveId', {
 		config: {
 			// add the rawBody to this route. if false, rawBody will be disabled when global is true
 			rawBody: true
 		},
 		handler: async (req, res) => {
-
+			const { hiveId } = req.params;
 			const data = req.body;
 			logger.info('Received metric data', data);
 
-
 			try {
-				const points = [
-					{
-						measurement: data?.metric_name ? data.metric_name : 'beehive_metrics',
-						tags: {
-							hive_id: data?.hive_id ? data.hive_id : 'unknown',
-						},
-						fields: {
-							value: data?.value ? parseFloat(data.value) : 0
-						}
-					}
-				];
-
 				let influx = await initInflux()
-				await influx.writePoints(points);
-				logger.info('Data written to InfluxDB');
-				res.status(200).send('Data logged');
+				let org = `gratheon` // change to be UID specific
+				let bucket = `gratheon`
+
+				let writeClient = influx.getWriteApi(org, bucket, 'ns')
+
+				let point = new Point('beehive_metrics')
+					.tag('hive_id', hiveId)
+
+				// for each data.fields field, create a field with the same name
+				Object.entries(data.fields).forEach(([key, value]) => {
+					point.intField(key, value)
+				})
+
+				writeClient.writePoint(point)
+				writeClient.flush()
+
+				logger.info('Data written to InfluxDB', point);
+				res.status(200).send('OK');
 			} catch (error) {
 				logger.error('Error writing to InfluxDB');
-				console.error(error);
+				//@ts-ignore
+				console.error(error.message);
 				res.status(500).send('Internal Server Error');
 			}
 		}

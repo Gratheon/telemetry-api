@@ -1,24 +1,18 @@
-import { InfluxDB } from 'influx';
+//repl.repl.ignoreUndefined=true
 
-let influx;
+import { InfluxDB } from '@influxdata/influxdb-client'
+
+let client
 
 export async function initInflux() {
-	if (!influx) {
-		const database = process.env.INFLUXDB_DATABASE || 'beehive_data'
+	if (!client) {
+		const token = process.env.INFLUXDB_TOKEN
+		const port = process.env.INFLUXDB_PORT || 8086
+		const host = process.env.INFLUXDB_HOST || 'localhost'
+		const url = `http://${host}:${port}`
 
-		// @ts-ignore
-		influx = new InfluxDB({
-			host: process.env.INFLUXDB_HOST || 'localhost',
-			port: process.env.INFLUXDB_PORT || 8086,
-			database
-		});
-
-		let dbNames = await influx.getDatabaseNames()
-
-		if (!dbNames.includes(database)) {
-			await influx.createDatabase(database);
-		}
+		client = new InfluxDB({ url, token })
 	}
 
-	return influx;
+	return client;
 }
