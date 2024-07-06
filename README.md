@@ -33,6 +33,10 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 ## Installation & development
 Checkout grafana first from https://github.com/Gratheon/grafana
 Start those pods to have influx with docker-compose
+- Open http://localhost:5300/
+- login into influxdb
+- open Load Data -> API Tokens -> Generate API Token so that telemetry-api could write data to influxdb
+- Change `INFLUXDB_TOKEN` in docker-compose.dev.yml and set it to the token you generated
 
 Then start telemetry api:
 ```bash
