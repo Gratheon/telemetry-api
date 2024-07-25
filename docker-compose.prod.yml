@@ -12,7 +12,7 @@ services:
       - ENV_ID=prod
       - DD_ENV=prod
       - DD_PROFILING_ENABLED=true
-      - INFLUXDB_HOST=influxdb
+      - INFLUXDB_HOST=localhost
       - INFLUXDB_PORT=8086
       - INFLUXDB_DATABASE=beehive_data
     restart: always

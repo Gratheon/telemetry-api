@@ -27,7 +27,18 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 ## API
 | URL | Method | Description |
 | --- | --- | --- |
-| /metric/:hiveId | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service |
+| /metric/:hiveId | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service
+
+```json
+{
+  "fields": {
+    "temperature": 25.5
+  }
+}
+
+```
+
+|
 | /graphql | POST | Federated graphql API endpoint. Used to fetch data from web-app with authorization checks in graphql-router |
 
 ## Installation & development
