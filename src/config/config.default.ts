@@ -6,7 +6,9 @@ const config = {
 	// you get this token from the InfluxDB UI after you spin up container
 	// and go through installation
 	// see github.com/gratheon/grafana docker-compose.yml
-	influxToken: ""
+	influxToken: "",
+	influxOrg: "gratheon",
+	influxBucket: "gratheon"
 };
 
 export default config;

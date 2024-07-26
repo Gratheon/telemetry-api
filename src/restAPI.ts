@@ -4,7 +4,7 @@ import { Point } from '@influxdata/influxdb-client'
 
 // local dependencies
 import { logger } from './logger';
-// import config from './config/index';
+import config from './config/index';
 
 
 import { initInflux } from './models/influx';
@@ -31,10 +31,8 @@ export function registerRestAPI(app) {
 
 			try {
 				let influx = await initInflux()
-				let org = `gratheon` // change to be UID specific
-				let bucket = `gratheon`
 
-				let writeClient = influx.getWriteApi(org, bucket, 'ns')
+				let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
 
 				let point = new Point('beehive_metrics')
 					.tag('hive_id', hiveId)

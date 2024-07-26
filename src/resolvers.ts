@@ -14,7 +14,7 @@ export const resolvers = {
 		telemetry:  (_, __, ctx) => {
 
 // 			let queryClient = client.getQueryApi(org)
-// let fluxQuery = `from(bucket: "gratheon")
+// let fluxQuery = `from(bucket: "beehive_metrics")
 //  |> range(start: -10m)
 //  |> filter(fn: (r) => r._measurement == "measurement1")`
 
