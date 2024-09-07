@@ -1,5 +1,3 @@
-import "./tracer"; // must come before importing any instrumented module.
-
 import { ApolloServer } from "apollo-server-fastify";
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import fastify from "fastify";
@@ -14,6 +12,7 @@ import { resolvers } from './resolvers';
 import { registerSchema } from "./schema-registry";
 import { logger } from './logger'
 import { registerRestAPI } from "./restAPI";
+import { ApolloServerPluginInlineTraceDisabled } from "apollo-server-core";
 
 Sentry.init({
 	dsn: config.sentryDsn,
@@ -46,7 +45,8 @@ async function startApolloServer(app, typeDefs, resolvers) {
 		plugins: [
 			fastifyAppClosePlugin(app),
 			ApolloServerPluginLandingPageGraphQLPlayground(),
-			ApolloServerPluginDrainHttpServer({ httpServer: app.server })
+			ApolloServerPluginDrainHttpServer({ httpServer: app.server }),
+			ApolloServerPluginInlineTraceDisabled()
 		],
 		context: (req) => {
 			return {
@@ -99,6 +99,6 @@ async function startApolloServer(app, typeDefs, resolvers) {
 		logger.info(`To report metrics over API use POST http://localhost:${port}/metric`);
 		logger.info(`To use graphql, use POST http://localhost:${port}/graphql`);
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 	}
 })();
