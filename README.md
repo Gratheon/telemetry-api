@@ -27,12 +27,14 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 ## API
 | URL | Method | Description |
 | --- | --- | --- |
-| /metric/:hiveId | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service
+| /metric | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service
 
 ```json
 {
+  "beehive_id": "123",
   "fields": {
-    "temperature": 25.5
+    "temperature": 25.5,
+    "weight": 40
   }
 }
 

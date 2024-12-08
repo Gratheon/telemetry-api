@@ -19,15 +19,26 @@ export function registerRestAPI(app) {
 		routes: [] // array of routes, **`global`** will be ignored, wildcard routes not supported
 	})
 
-	app.post('/metric/:hiveId', {
+	app.post('/metric', {
 		config: {
 			// add the rawBody to this route. if false, rawBody will be disabled when global is true
 			rawBody: true
 		},
 		handler: async (req, res) => {
-			const { hiveId } = req.params;
 			const data = req.body;
 			logger.info('Received metric data', data);
+
+			if (!data.hive_id) {
+				logger.error('hive_id not provided');
+				res.status(400).send('Bad Request: hive_id not provided');
+				return;
+			}
+
+			if (!data.fields) {
+				logger.error('fields not provided');
+				res.status(400).send('Bad Request: fields not provided');
+				return;
+			}
 
 			try {
 				let influx = await initInflux()
@@ -35,7 +46,7 @@ export function registerRestAPI(app) {
 				let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
 
 				let point = new Point('beehive_metrics')
-					.tag('hive_id', hiveId)
+					.tag('hive_id', data.hive_id)
 
 				// for each data.fields field, create a field with the same name
 				Object.entries(data.fields).forEach(([key, value]) => {
