@@ -16,16 +16,15 @@ let influxClient = initInflux();
 export const resolvers = {
     Query: {
         temperatureCelsius: async (_, {hiveId}, ctx) => {
-            logger.info(`Query.telemetry queried: ${ctx.uid}`);
-            return await readMetricsFromInflux(influxClient, hiveId, "temperature_celsius");
+            return await readMetricsFromInflux(influxClient, hiveId, "temperatureCelsius");
         },
         humidityPercent: async (_, {hiveId}, ctx) => {
             logger.info(`Query.telemetry queried: ${ctx.uid}`);
-            return await readMetricsFromInflux(influxClient, hiveId, "humidity_percent");
+            return await readMetricsFromInflux(influxClient, hiveId, "humidityPercent");
         },
         weightKg: async (_, {hiveId}, ctx) => {
             logger.info(`Query.telemetry queried: ${ctx.uid}`);
-            return await readMetricsFromInflux(influxClient, hiveId, "weight_kg");
+            return await readMetricsFromInflux(influxClient, hiveId, "weightKg");
         }
     },
     Mutation: {
@@ -34,7 +33,7 @@ export const resolvers = {
 
             try {
                 await addMetricHandler(influxClient, {
-                    hive_id: hiveId,
+                    hiveId,
                     fields
                 });
             } catch (e) {

@@ -3,6 +3,7 @@ import {expect} from '@jest/globals';
 // port from docker-compose.test.yml
 const URL = 'http://localhost:8600/graphql';
 
+const hiveId = 7;
 describe('POST /graphql', () => {
     describe('addMetric', () => {
         describe('validation errors', () => {
@@ -28,7 +29,7 @@ describe('POST /graphql', () => {
                         }
                     }`,
                         "variables": {
-                            "hiveId": 123,
+                            "hiveId": hiveId,
                             "fields": {}
                         }
                     })
@@ -66,7 +67,7 @@ describe('POST /graphql', () => {
                         }
                     }`,
                     "variables": {
-                        "hiveId": 123,
+                        "hiveId": hiveId,
                         "fields": {
                             "temperatureCelsius": Math.random() * 60 - 20,
                             "weightKg": Math.random() * 100,
@@ -100,13 +101,14 @@ describe('POST /graphql', () => {
                         }
                     }`,
                     "variables": {
-                        "hiveId": 123
+                        "hiveId": hiveId
                     }
                 })
             });
 
             const result = await response.json();
             expect(response.status).toBe(200);
+            console.log(result.data)
             expect(result.data.temperatureCelsius.length).not.toEqual(0);
         });
     })

@@ -5,7 +5,7 @@ const URL = 'http://localhost:8600/v1/metric';
 
 describe('POST /v1/metric', () => {
     describe('validation errors', () => {
-        it('empty body should fail with missing hive_id', async () => {
+        it('empty body should fail with missing hiveId', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json',},
@@ -14,7 +14,7 @@ describe('POST /v1/metric', () => {
 
             const result = await response.json();
             expect(response.status).toBe(400);
-            expect(result.error).toBe('Bad Request: hive_id not provided');
+            expect(result.error).toBe('Bad Request: hiveId not provided');
         });
 
         it('empty body should fail with missing fields', async () => {
@@ -22,7 +22,7 @@ describe('POST /v1/metric', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json',},
                 body: JSON.stringify({
-                    hive_id: 123,
+                    hiveId: 123,
                     // <-- missing fields
                 })
             });
@@ -37,7 +37,7 @@ describe('POST /v1/metric', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json',},
                 body: JSON.stringify({
-                    hive_id: 123,
+                    hiveId: 123,
                     fields: {} // <-- missing fields
                 })
             });
@@ -58,11 +58,11 @@ describe('POST /v1/metric', () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                "hive_id": 123,
+                "hiveId": 123,
                 "fields": {
-                    "temperature_celsius": 12,
-                    "weight_kg": 0,
-                    "humidity_percent": 0
+                    "temperatureCelsius": 12,
+                    "weightKg": 0,
+                    "humidityPercent": 0
                 }
             })
         });

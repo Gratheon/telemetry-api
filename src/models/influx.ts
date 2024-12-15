@@ -19,14 +19,16 @@ export function initInflux() {
 	return client;
 }
 
+const beehiveMetrics = 'beehive_metrics'
+
 export async function readMetricsFromInflux(influx, hiveId, field:string) {
 	let queryApi = influx.getQueryApi(config.influxOrg)
 
 	// let queryClient = client.getQueryApi(org)
 	let fluxQuery = `from(bucket: "${config.influxBucket}")
  |> range(start: -60m)
- |> filter(fn: (r) => r._measurement == "beehive_metrics")
- |> filter(fn: (r) => r.hive_id == "${hiveId}")
+ |> filter(fn: (r) => r._measurement == "${beehiveMetrics}")
+ |> filter(fn: (r) => r.hiveId == "${hiveId}")
  |> filter(fn: (r) => r._field == "${field}")
  |> sort(columns: ["_time"])
  `
@@ -56,26 +58,24 @@ export async function readMetricsFromInflux(influx, hiveId, field:string) {
 }
 
 
-export async function writeMetricsToInflux(influx, hiveId, fields) {
+export async function writeBeehiveMetricsToInflux(influx, hiveId, fields) {
 	let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
 
-	let point = new Point('beehive_metrics').tag('hive_id', hiveId)
+	let point = new Point(beehiveMetrics).tag('hiveId', hiveId)
 
-	if(fields.temperature_celsius != null) {
-		point.floatField("temperature_celsius", fields.temperatureCelsius)
+	if(fields.temperatureCelsius != null) {
+		point.floatField("temperatureCelsius", fields.temperatureCelsius)
 	}
 
-	if (fields.humidity_percent != null) {
-		point.floatField("humidity_percent", fields.humidityPercent)
+	if (fields.humidityPercent != null) {
+		point.floatField("humidityPercent", fields.humidityPercent)
 	}
 
-	if (fields.weight_kg != null) {
-		point.floatField("weight_kg", fields.weightKg)
+	if (fields.weightKg != null) {
+		point.floatField("weightKg", fields.weightKg)
 	}
 
 
 	writeClient.writePoint(point)
-	writeClient.flush()
-
-	logger.info('Data written to InfluxDB', point);
+	await writeClient.flush()
 }
