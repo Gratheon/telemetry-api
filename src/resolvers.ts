@@ -41,14 +41,14 @@ export const resolvers = {
                     logger.errorEnriched('Error writing to InfluxDB', e);
 
                     return {
-                        __typename: 'Error',
+                        __typename: 'TelemetryError',
                         message: e.message,
                         code: e.errorCode
                     };
                 } else {
                     logger.errorEnriched('Error writing to InfluxDB', e);
                     return {
-                        __typename: 'Error',
+                        __typename: 'TelemetryError',
                         message: 'Internal Server Error',
                         code: errorCodes.internalServerError
                     };

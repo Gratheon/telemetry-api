@@ -2,7 +2,7 @@ scalar JSON
 scalar DateTime
 scalar URL
 
-type Error{
+type TelemetryError{
 	message: String
 	code: String
 }
@@ -28,7 +28,7 @@ type Mutation {
 type AddMetricMessage {
 	message: String
 }
-union AddMetricResult = AddMetricMessage | Error
+union AddMetricResult = AddMetricMessage | TelemetryError
 
 input MetricSetInput {
 	temperatureCelsius: Float

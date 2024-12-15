@@ -19,7 +19,7 @@ describe('POST /graphql', () => {
                         addMetric(hiveId: $hiveId, fields: $fields) {
                             __typename
                             
-                            ...on Error {
+                            ...on TelemetryError {
                                 message
                                 code
                             }
@@ -38,7 +38,7 @@ describe('POST /graphql', () => {
                 const result = await response.text();
                 expect(response.status).toBe(200); // <-- yes, GraphQL always returns 200 even if there is an error
                 expect(result).toBe(
-                    `{"data":{"addMetric":{"__typename":"Error","message":"Bad Request: fields not provided","code":"4002"}}}\n`
+                    `{"data":{"addMetric":{"__typename":"TelemetryError","message":"Bad Request: fields not provided","code":"4002"}}}\n`
                 );
             });
         });
@@ -57,7 +57,7 @@ describe('POST /graphql', () => {
                         addMetric(hiveId: $hiveId, fields: $fields) {
                             __typename
                             
-                            ...on Error {
+                            ...on TelemetryError {
                                 message
                                 code
                             }
@@ -108,7 +108,6 @@ describe('POST /graphql', () => {
 
             const result = await response.json();
             expect(response.status).toBe(200);
-            console.log(result.data)
             expect(result.data.temperatureCelsius.length).not.toEqual(0);
         });
     })
