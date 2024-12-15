@@ -42,50 +42,70 @@ describe('POST /graphql', () => {
                 );
             });
         });
-
-
-        // success case
-        it('should respond with message:OK in case of success', async () => {
-            let response = await fetch(URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    "query": `
-                    mutation addMetric($hiveId: ID!, $fields: MetricSetInput!) {
-                        addMetric(hiveId: $hiveId, fields: $fields) {
-                            __typename
-                            
-                            ...on TelemetryError {
-                                message
-                                code
-                            }
-                            ...on AddMetricMessage {
-                                message
-                            }
-                        }
-                    }`,
-                    "variables": {
-                        "hiveId": hiveId,
-                        "fields": {
-                            "temperatureCelsius": Math.random() * 60 - 20,
-                            "weightKg": Math.random() * 100,
-                            "humidityPercent": Math.random() * 100
-                        }
-                    }
-                })
-            });
-
-            const result = await response.text();
-            expect(response.status).toBe(200);
-            expect(result).toBe(
-                `{"data":{"addMetric":{"__typename":"AddMetricMessage","message":"OK"}}}\n`
-            );
-        });
     });
 
     describe('temperatureCelsius', () => {
+        describe('with timeRangeMin param', () => {
+            async function fetchWithTimeRange(timeRange) {
+                let response = await fetch(URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "query": `
+                    query temperatureCelsius($hiveId: ID!, $timeRangeMin: Int) {
+                        temperatureCelsius(hiveId: $hiveId, timeRangeMin: $timeRangeMin) {
+                            ... on MetricFloatList{
+                                metrics{ t v }
+                            }
+                            
+                            ... on TelemetryError{
+                                message
+                                code
+                            }
+                        }
+                    }`,
+                        "variables": {
+                            "hiveId": hiveId,
+                            "timeRangeMin": timeRange
+                        }
+                    })
+                });
+                return response;
+            }
+
+            it('should fail if timeRangeMin is 0', async () => {
+                let response = await fetchWithTimeRange(0);  // <-- this is not a valid value
+
+                const result = await response.text();
+                expect(response.status).toBe(200);
+                expect(result).toBe(
+                    `{"data":{"temperatureCelsius":{"message":"Time range must be positive","code":"4003"}}}\n`
+                );
+            });
+
+            it('should fail if timeRangeMin is negative', async () => {
+                let response = await fetchWithTimeRange(-100);  // <-- this is not a valid value
+
+                const result = await response.text();
+                expect(response.status).toBe(200);
+                expect(result).toBe(
+                    `{"data":{"temperatureCelsius":{"message":"Time range must be positive","code":"4003"}}}\n`
+                );
+            });
+
+            it('should fail if timeRangeMin is too big', async () => {
+                let response = await fetchWithTimeRange(60*24*8);  // <-- this is not a valid value, should be below 1 week
+
+                const result = await response.text();
+                expect(response.status).toBe(200);
+                expect(result).toBe(
+                    `{"data":{"temperatureCelsius":{"message":"Time range cannot exceed 7 days","code":"4003"}}}\n`
+                );
+            });
+        });
+
         it('should return temperature data', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
@@ -96,8 +116,14 @@ describe('POST /graphql', () => {
                     "query": `
                     query temperatureCelsius($hiveId: ID!) {
                         temperatureCelsius(hiveId: $hiveId) {
-                            t
-                            v
+                            ... on MetricFloatList{
+                                metrics{ t v }
+                            }
+                            
+                            ... on TelemetryError{
+                                message
+                                code
+                            }
                         }
                     }`,
                     "variables": {

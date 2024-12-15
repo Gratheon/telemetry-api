@@ -30,6 +30,27 @@ function validateTimeRange(timeRangeMin) {
     return null;
 }
 
+// wrapMetricsResponse wraps the response of a metrics query in a try-catch block
+// and returns a GraphQL error if an error occurs
+// needed just to avoid code duplication in multiple resolvers
+async function wrapMetricsResponse(f: () => Promise<any>) {
+    try{
+        return {
+            __typename: "MetricFloatList",
+            metrics: await f()
+        };
+    }
+    catch(err) {
+        logger.errorEnriched('Error reading from InfluxDB', err);
+
+        if (err instanceof TelemetryServerError) {
+            return wrapGraphqlError(err.errorCode, err.message);
+        } else {
+            return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
+        }
+    }
+}
+
 export const resolvers = {
     Query: {
         temperatureCelsius: async (_, {hiveId, timeRangeMin}, ctx) => {
@@ -38,7 +59,9 @@ export const resolvers = {
                 return err;
             }
 
-            return await readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "temperatureCelsius");
+            return wrapMetricsResponse(()=>{
+                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "temperatureCelsius")
+            })
         },
         humidityPercent: async (_, {hiveId, timeRangeMin}, ctx) => {
             let err = validateTimeRange(timeRangeMin);
@@ -46,16 +69,19 @@ export const resolvers = {
                 return err;
             }
 
-            logger.info(`Query.telemetry queried: ${ctx.uid}`);
-            return await readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "humidityPercent");
+            return wrapMetricsResponse(()=>{
+                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "humidityPercent")
+            })
         },
         weightKg: async (_, {hiveId, timeRangeMin}, ctx) => {
             let err = validateTimeRange(timeRangeMin);
             if(err) {
                 return err;
             }
-            logger.info(`Query.telemetry queried: ${ctx.uid}`);
-            return await readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "weightKg");
+
+            return wrapMetricsResponse(()=>{
+                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "weightKg")
+            })
         }
     },
     Mutation: {

@@ -8,9 +8,9 @@ type TelemetryError{
 }
 
 type Query {
-	temperatureCelsius(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
-	humidityPercent(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
-	weightKg(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
+	temperatureCelsius(hiveId: ID!, timeRangeMin: Int): MetricListResult
+	humidityPercent(hiveId: ID!, timeRangeMin: Int): MetricListResult
+	weightKg(hiveId: ID!, timeRangeMin: Int): MetricListResult
 }
 
 type MetricFloat {
@@ -20,6 +20,11 @@ type MetricFloat {
 	"""Float value of the metric. We use short-hand name to save bandwidth as it is a repeated metric"""
 	v: Float
 }
+
+type MetricFloatList {
+	metrics: [MetricFloat]
+}
+union MetricListResult = MetricFloatList | TelemetryError
 
 type Mutation {
 	addMetric(
@@ -31,6 +36,7 @@ type Mutation {
 type AddMetricMessage {
 	message: String
 }
+
 union AddMetricResult = AddMetricMessage | TelemetryError
 
 input MetricSetInput {
