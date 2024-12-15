@@ -1,69 +1,74 @@
 // global dependencies
-import fastifyRawBody from 'fastify-raw-body';
-import { Point } from '@influxdata/influxdb-client'
+import fastifyRawBody from "fastify-raw-body";
+import { Point } from "@influxdata/influxdb-client";
 
 // local dependencies
-import { logger } from './logger';
-import config from './config/index';
+import { logger } from "./logger";
+import config from "./config/index";
 
+import { initInflux, writeMetricsToInflux } from "./models/influx";
 
-import { initInflux } from './models/influx';
+class TelemetryServerError extends Error {
+  // You can add any additional properties or methods you need
+  constructor(message: string, public httpStatus?: number) {
+    super(message); // Call the parent class constructor with the message
+    this.name = 'TelemetryServerError'; // Set the name of the error to your custom type
+    this.message = message;
+    this.httpStatus = httpStatus;
+  }
+}
+
 
 export function registerRestAPI(app) {
+  app.register(fastifyRawBody, {
+    field: "rawBody", // change the default request.rawBody property name
+    global: false, // add the rawBody to every request. **Default true**
+    encoding: "utf8", // set it to false to set rawBody as a Buffer **Default utf8**
+    runFirst: true, // get the body before any preParsing hook change/uncompress it. **Default false**
+    routes: [], // array of routes, **`global`** will be ignored, wildcard routes not supported
+  });
 
-	app.register(fastifyRawBody, {
-		field: 'rawBody', // change the default request.rawBody property name
-		global: false, // add the rawBody to every request. **Default true**
-		encoding: 'utf8', // set it to false to set rawBody as a Buffer **Default utf8**
-		runFirst: true, // get the body before any preParsing hook change/uncompress it. **Default false**
-		routes: [] // array of routes, **`global`** will be ignored, wildcard routes not supported
-	})
+  app.post("/metric", {
+    config: {
+      // add the rawBody to this route. if false, rawBody will be disabled when global is true
+      rawBody: true,
+    },
+    handler: async (req, res) => {
+      const data = req.body;
+      logger.info("Received metric data", data);
 
-	app.post('/metric', {
-		config: {
-			// add the rawBody to this route. if false, rawBody will be disabled when global is true
-			rawBody: true
-		},
-		handler: async (req, res) => {
-			const data = req.body;
-			logger.info('Received metric data', data);
-
-			if (!data.hive_id) {
-				logger.error('hive_id not provided');
-				res.status(400).send('Bad Request: hive_id not provided');
-				return;
-			}
-
-			if (!data.fields) {
-				logger.error('fields not provided');
-				res.status(400).send('Bad Request: fields not provided');
-				return;
-			}
-
-			try {
-				let influx = await initInflux()
-
-				let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
-
-				let point = new Point('beehive_metrics')
-					.tag('hive_id', data.hive_id)
-
-				// for each data.fields field, create a field with the same name
-				Object.entries(data.fields).forEach(([key, value]) => {
-					point.intField(key, value)
-				})
-
-				writeClient.writePoint(point)
-				writeClient.flush()
-
-				logger.info('Data written to InfluxDB', point);
-				res.status(200).send('OK');
-			} catch (error) {
-				logger.error('Error writing to InfluxDB');
-				//@ts-ignore
-				console.error(error.message);
-				res.status(500).send('Internal Server Error');
-			}
-		}
-	})
+      try {
+        await addMetricHandler(data);
+        res.status(200).send({
+            message: "OK",
+        });
+      } catch (e: any) {
+        if (e instanceof TelemetryServerError) {
+          logger.errorEnriched("Error writing to InfluxDB", e);
+          res.status(e.httpStatus)
+            .send(JSON.stringify({
+              error: e.message
+            }));
+        } else {
+            logger.errorEnriched("Error writing to InfluxDB", e);
+            res.status(500)
+                .send("Internal Server Error");
+        }
+      }
+    },
+  });
 }
+
+async function addMetricHandler(input) {
+  if (!input.hive_id) {
+    throw new TelemetryServerError("Bad Request: hive_id not provided", 400);
+  }
+
+  if (!input.fields) {
+    throw new TelemetryServerError("Bad Request: fields not provided", 400);
+  }
+
+  let influx = await initInflux();
+  await writeMetricsToInflux(influx, input);
+}
+

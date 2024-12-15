@@ -17,7 +17,8 @@
   },
   "scripts": {
     "build": "tsc -p ./src/config/tsconfig.json",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:integration",
+    "test:integration": "./node_modules/.bin/jest --config ./test/integration/jest.coverage.json --detectOpenHandles --forceExit",
     "dev": "ENV_ID=dev nodemon app/telemetry-api.js",
     "start": "ENV_ID=prod node app/telemetry-api.js",
     "deploy": "make"
@@ -33,8 +34,12 @@
   },
   "homepage": "https://github.com/gratheon/telemetry-api#readme",
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^2.0.20",
     "tsc-watch": "^6.0.4",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@types/jest": "29.2.4",
+    "@types/node": "18.11.11",
+    "ts-jest": "29.0.3"
   }
 }
