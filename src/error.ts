@@ -12,6 +12,7 @@ export class TelemetryServerError extends Error {
 export const errorCodes = {
     hiveIdMissing: 4001,
     fieldsMissing: 4002,
+    invalidTimeRange: 4003,
 
     internalServerError: 5000,
 }

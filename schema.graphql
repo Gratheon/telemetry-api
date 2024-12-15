@@ -8,14 +8,17 @@ type TelemetryError{
 }
 
 type Query {
-	temperatureCelsius(hiveId: ID!): [MetricFloat]
-	humidityPercent(hiveId: ID!): [MetricFloat]
-	weightKg(hiveId: ID!): [MetricFloat]
+	temperatureCelsius(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
+	humidityPercent(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
+	weightKg(hiveId: ID!, timeRangeMin: Int): [MetricFloat]
 }
 
 type MetricFloat {
-	time: DateTime!
-	value: Float
+	"""Timestamp of the metric. We use short-hand name to save bandwidth as it is a repeated metric"""
+	t: DateTime!
+
+	"""Float value of the metric. We use short-hand name to save bandwidth as it is a repeated metric"""
+	v: Float
 }
 
 type Mutation {

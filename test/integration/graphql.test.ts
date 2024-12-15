@@ -96,8 +96,8 @@ describe('POST /graphql', () => {
                     "query": `
                     query temperatureCelsius($hiveId: ID!) {
                         temperatureCelsius(hiveId: $hiveId) {
-                            time
-                            value
+                            t
+                            v
                         }
                     }`,
                     "variables": {

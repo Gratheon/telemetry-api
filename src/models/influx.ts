@@ -21,12 +21,12 @@ export function initInflux() {
 
 const beehiveMetrics = 'beehive_metrics'
 
-export async function readMetricsFromInflux(influx, hiveId, field:string) {
+export async function readMetricsFromInflux(influx, hiveId, rangeMin=60, field:string) {
 	let queryApi = influx.getQueryApi(config.influxOrg)
 
 	// let queryClient = client.getQueryApi(org)
 	let fluxQuery = `from(bucket: "${config.influxBucket}")
- |> range(start: -60m)
+ |> range(start: -${rangeMin}m)
  |> filter(fn: (r) => r._measurement == "${beehiveMetrics}")
  |> filter(fn: (r) => r.hiveId == "${hiveId}")
  |> filter(fn: (r) => r._field == "${field}")
@@ -38,19 +38,17 @@ export async function readMetricsFromInflux(influx, hiveId, field:string) {
 		const results = [];
 		queryApi.queryRows(fluxQuery, {
 			next: (row, tableMeta) => {
-				console.log({row})
 				const tableObject = tableMeta.toObject(row);
 				results.push({
-					time: tableObject._time,
-					value: tableObject._value,
+					t: tableObject._time,
+					v: tableObject._value,
 				});
 			},
 			error: (error) => {
-				console.error('Error', error);
+				logger.error(error);
 				reject(error);
 			},
 			complete: () => {
-				console.log('Success');
 				resolve(results);
 			},
 		});
