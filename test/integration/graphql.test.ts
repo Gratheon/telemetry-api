@@ -4,34 +4,42 @@ import {expect} from '@jest/globals';
 const URL = 'http://localhost:8600/graphql';
 
 describe('POST /graphql', () => {
-    // describe('validation errors', () => {
-    //     it('empty body should fail with missing hive_id', async () => {
-    //         let response = await fetch(URL, {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json',},
-    //             body: JSON.stringify({}) // <-- empty body
-    //         });
-    //
-    //         const result = await response.json();
-    //         expect(response.status).toBe(400);
-    //         expect(result.error).toBe('Bad Request: hive_id not provided');
-    //     });
-    //
-    //     it('empty body should fail with missing fields', async () => {
-    //         let response = await fetch(URL, {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json',},
-    //             body: JSON.stringify({
-    //                 hive_id: 123,
-    //                 // <-- missing fields
-    //             })
-    //         });
-    //
-    //         const result = await response.json();
-    //         expect(response.status).toBe(400);
-    //         expect(result.error).toBe('Bad Request: fields not provided');
-    //     });
-    // });
+    describe('validation errors', () => {
+        it('empty body should fail with missing fields', async () => {
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    "query": `
+                    mutation addMetric($hiveId: ID!, $fields: MetricSetInput!) {
+                        addMetric(hiveId: $hiveId, fields: $fields) {
+                            __typename
+                            
+                            ...on Error {
+                                message
+                                code
+                            }
+                            ...on AddMetricMessage {
+                                message
+                            }
+                        }
+                    }`,
+                    "variables": {
+                        "hiveId": 123,
+                        "fields": {}
+                    }
+                })
+            });
+
+            const result = await response.text();
+            expect(response.status).toBe(200); // <-- yes, GraphQL always returns 200 even if there is an error
+            expect(result).toBe(
+                `{"data":{"addMetric":{"__typename":"Error","message":"Bad Request: fields not provided","code":"4002"}}}\n`
+            );
+        });
+    });
 
 
     // success case

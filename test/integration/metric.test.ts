@@ -1,9 +1,9 @@
 import {expect} from '@jest/globals';
 
 // port from docker-compose.test.yml
-const URL = 'http://localhost:8600/metric';
+const URL = 'http://localhost:8600/v1/metric';
 
-describe('POST /metric', () => {
+describe('POST /v1/metric', () => {
     describe('validation errors', () => {
         it('empty body should fail with missing hive_id', async () => {
             let response = await fetch(URL, {
@@ -24,6 +24,21 @@ describe('POST /metric', () => {
                 body: JSON.stringify({
                     hive_id: 123,
                     // <-- missing fields
+                })
+            });
+
+            const result = await response.json();
+            expect(response.status).toBe(400);
+            expect(result.error).toBe('Bad Request: fields not provided');
+        });
+
+        it('empty body should fail with fields as empty object', async () => {
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',},
+                body: JSON.stringify({
+                    hive_id: 123,
+                    fields: {} // <-- missing fields
                 })
             });
 

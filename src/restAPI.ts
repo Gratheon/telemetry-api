@@ -18,7 +18,7 @@ export function registerRestAPI(app) {
     routes: [], // array of routes, **`global`** will be ignored, wildcard routes not supported
   });
 
-  app.post("/metric", {
+  app.post("/v1/metric", {
     config: {
       // add the rawBody to this route. if false, rawBody will be disabled when global is true
       rawBody: true,

@@ -28,8 +28,11 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 | http://localhost:8600 | Local dev |
 
 
-## API
-See [REST API documentation](https://gratheon.com/docs/API/REST%20APIs)
+## APIs
+This service provides two types of APIs
+- [GraphQL API](https://gratheon.com/docs/API/GraphQL%20APIs) - most flexible and type safe for web-app, not versioned
+- [REST API](https://gratheon.com/docs/API/REST%20APIs) - more of a legacy API, intended for IoT devices, versioned
+
 
 ## Installation & development
 Checkout grafana first from https://github.com/Gratheon/grafana

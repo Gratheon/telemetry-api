@@ -6,7 +6,7 @@ export async function addMetricHandler(input) {
         throw new TelemetryServerError("Bad Request: hive_id not provided", errorCodes.hiveIdMissing, 400);
     }
 
-    if (!input.fields) {
+    if (!input.fields || Object.keys(input.fields).length === 0) {
         throw new TelemetryServerError("Bad Request: fields not provided", errorCodes.fieldsMissing, 400);
     }
 
