@@ -35,11 +35,7 @@ export const resolvers = {
             try {
                 await addMetricHandler(influxClient, {
                     hive_id: hiveId,
-                    fields: {
-                        temperature_celsius: fields.temperatureCelsius,
-                        humidity_percent: fields.humidityPercent,
-                        weight_kg: fields.weightKg,
-                    }
+                    fields
                 });
             } catch (e) {
                 if (e instanceof TelemetryServerError) {

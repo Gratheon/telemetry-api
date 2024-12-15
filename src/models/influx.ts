@@ -56,21 +56,21 @@ export async function readMetricsFromInflux(influx, hiveId, field:string) {
 }
 
 
-export async function writeMetricsToInflux(influx, hive_id, fields) {
+export async function writeMetricsToInflux(influx, hiveId, fields) {
 	let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
 
-	let point = new Point('beehive_metrics').tag('hive_id', hive_id)
+	let point = new Point('beehive_metrics').tag('hive_id', hiveId)
 
 	if(fields.temperature_celsius != null) {
-		point.floatField("temperature_celsius", fields.temperature_celsius)
+		point.floatField("temperature_celsius", fields.temperatureCelsius)
 	}
 
 	if (fields.humidity_percent != null) {
-		point.floatField("humidity_percent", fields.humidity_percent)
+		point.floatField("humidity_percent", fields.humidityPercent)
 	}
 
 	if (fields.weight_kg != null) {
-		point.floatField("weight_kg", fields.weight_kg)
+		point.floatField("weight_kg", fields.weightKg)
 	}
 
 

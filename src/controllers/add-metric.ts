@@ -10,6 +10,6 @@ export async function addMetricHandler(influx, input) {
         throw new TelemetryServerError("Bad Request: fields not provided", errorCodes.fieldsMissing, 400);
     }
 
-    await writeMetricsToInflux(influx, input.hive_id, input.fields);
+    await writeMetricsToInflux(influx, input.hiveId, input.fields);
 }
 

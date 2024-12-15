@@ -44,7 +44,9 @@ export function registerRestAPI(app) {
         } else {
             logger.errorEnriched("Error writing to InfluxDB", e);
             res.status(500)
-                .send("Internal Server Error");
+                .send(JSON.stringify({
+                  error: "Internal Server Error"
+                }));
         }
       }
     },
