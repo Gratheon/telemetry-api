@@ -6,7 +6,7 @@ import {logger} from "../logger";
 
 let client
 
-export async function initInflux() {
+export function initInflux() {
 	if (!client) {
 		const token = config.influxToken;
 		const port = process.env.INFLUXDB_PORT || 8086
@@ -19,23 +19,58 @@ export async function initInflux() {
 	return client;
 }
 
+export async function readMetricsFromInflux(influx, hiveId, field:string) {
+	let queryApi = influx.getQueryApi(config.influxOrg)
+
+	// let queryClient = client.getQueryApi(org)
+	let fluxQuery = `from(bucket: "${config.influxBucket}")
+ |> range(start: -60m)
+ |> filter(fn: (r) => r._measurement == "beehive_metrics")
+ |> filter(fn: (r) => r.hive_id == "${hiveId}")
+ |> filter(fn: (r) => r._field == "${field}")
+ |> sort(columns: ["_time"])
+ `
 
 
-export async function writeMetricsToInflux(influx, data) {
+	return new Promise((resolve, reject) => {
+		const results = [];
+		queryApi.queryRows(fluxQuery, {
+			next: (row, tableMeta) => {
+				console.log({row})
+				const tableObject = tableMeta.toObject(row);
+				results.push({
+					time: tableObject._time,
+					value: tableObject._value,
+				});
+			},
+			error: (error) => {
+				console.error('Error', error);
+				reject(error);
+			},
+			complete: () => {
+				console.log('Success');
+				resolve(results);
+			},
+		});
+	});
+}
+
+
+export async function writeMetricsToInflux(influx, hive_id, fields) {
 	let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
 
-	let point = new Point('beehive_metrics').tag('hive_id', data.hive_id)
+	let point = new Point('beehive_metrics').tag('hive_id', hive_id)
 
-	if(data.fields.temperature_celsius != null) {
-		point.floatField("temperature_celsius", data.fields.temperature_celsius)
+	if(fields.temperature_celsius != null) {
+		point.floatField("temperature_celsius", fields.temperature_celsius)
 	}
 
-	if (data.fields.humidity_percent != null) {
-		point.floatField("humidity_percent", data.fields.humidity_percent)
+	if (fields.humidity_percent != null) {
+		point.floatField("humidity_percent", fields.humidity_percent)
 	}
 
-	if (data.fields.weight_kg != null) {
-		point.floatField("weight_kg", data.fields.weight_kg)
+	if (fields.weight_kg != null) {
+		point.floatField("weight_kg", fields.weight_kg)
 	}
 
 

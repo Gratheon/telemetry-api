@@ -7,7 +7,9 @@ import { logger } from "./logger";
 
 import {addMetricHandler} from "./controllers/add-metric";
 import {TelemetryServerError} from "./error";
+import {initInflux} from "./models/influx";
 
+let influxClient = initInflux();
 
 export function registerRestAPI(app) {
   app.register(fastifyRawBody, {
@@ -24,11 +26,11 @@ export function registerRestAPI(app) {
       rawBody: true,
     },
     handler: async (req, res) => {
-      const data = req.body;
-      logger.info("Received metric data", data);
+      const requestInput = req.body;
+      logger.info("Received metric data", requestInput);
 
       try {
-        await addMetricHandler(data);
+        await addMetricHandler(influxClient, requestInput);
         res.status(200).send({
             message: "OK",
         });

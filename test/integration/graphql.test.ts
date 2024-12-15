@@ -81,4 +81,50 @@ describe('POST /graphql', () => {
             `{"data":{"addMetric":{"__typename":"AddMetricMessage","message":"OK"}}}\n`
         );
     });
+
+    it('should write random values in a loop', async () => {
+
+        for(let i = 0; i < 10; i++) {
+
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    "query": `
+                    mutation addMetric($hiveId: ID!, $fields: MetricSetInput!) {
+                        addMetric(hiveId: $hiveId, fields: $fields) {
+                            __typename
+                            
+                            ...on Error {
+                                message
+                                code
+                            }
+                            ...on AddMetricMessage {
+                                message
+                            }
+                        }
+                    }`,
+                    "variables": {
+                        "hiveId": 123,
+                        "fields": {
+                            "temperatureCelsius": Math.random() * 60 - 20,
+                            "weightKg": Math.random() * 100,
+                            "humidityPercent": Math.random() * 100
+                        }
+                    }
+                })
+            });
+
+            const result = await response.text();
+            expect(response.status).toBe(200);
+            expect(result).toBe(
+                `{"data":{"addMetric":{"__typename":"AddMetricMessage","message":"OK"}}}\n`
+            );
+
+            // sleep
+            await new Promise(resolve => setTimeout(resolve, 5 * 1000));
+        }
+    });
 });

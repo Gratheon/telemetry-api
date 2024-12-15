@@ -8,7 +8,14 @@ type Error{
 }
 
 type Query {
-	telemetry: String
+	temperatureCelsius(hiveId: ID!): [MetricFloat]
+	humidityPercent(hiveId: ID!): [MetricFloat]
+	weightKg(hiveId: ID!): [MetricFloat]
+}
+
+type MetricFloat {
+	time: DateTime!
+	value: Float
 }
 
 type Mutation {
