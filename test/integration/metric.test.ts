@@ -1,10 +1,9 @@
 import {expect} from '@jest/globals';
-// import fetch from 'node-fetch';
 
 // port from docker-compose.test.yml
 const URL = 'http://localhost:8600/metric';
 
-describe('metric', () => {
+describe('POST /metric', () => {
     describe('validation errors', () => {
         it('empty body should fail with missing hive_id', async () => {
             let response = await fetch(URL, {

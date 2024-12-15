@@ -2,6 +2,29 @@ scalar JSON
 scalar DateTime
 scalar URL
 
+type Error{
+	message: String
+	code: String
+}
+
 type Query {
 	telemetry: String
+}
+
+type Mutation {
+	addMetric(
+		hiveId: ID!
+		fields: MetricSetInput!
+	): AddMetricResult
+}
+
+type AddMetricMessage {
+	message: String
+}
+union AddMetricResult = AddMetricMessage | Error
+
+input MetricSetInput {
+	temperatureCelsius: Float
+	humidityPercent: Float
+	weightKg: Float
 }

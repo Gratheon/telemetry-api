@@ -4,10 +4,13 @@ Expected to run in the cloud and receive IoT data from beehives.
 
 Main goal and feature is [described in Notion](https://gratheon.notion.site/Telemetry-API-5d60632841534620ba56d1bb296af98b)
 
-### Metrics examples
-- beehive weight (over time)
-- temperature
-- humidity
+### Metrics
+- ✅ temperature
+  - TODO: add 3d temperature endpoint `/metrics/temperature`
+- ✅ beehive weight (over time)
+- ✅ humidity
+
+#### TODO
 - CO2 levels
 - atmospheric pressure
 - bee traffic (in/out) at the hive entrance
@@ -24,24 +27,9 @@ Main goal and feature is [described in Notion](https://gratheon.notion.site/Tele
 | http://telemetry.gratheon.com | Production |
 | http://localhost:8600 | Local dev |
 
+
 ## API
-| URL | Method | Description |
-| --- | --- | --- |
-| /metric | POST | Send metrics to be stored in the database. Needs API tokens that are verified against user-cycle service
-
-```json
-{
-  "beehive_id": "123",
-  "fields": {
-    "temperature": 25.5,
-    "weight": 40
-  }
-}
-
-```
-
-|
-| /graphql | POST | Federated graphql API endpoint. Used to fetch data from web-app with authorization checks in graphql-router |
+See [REST API documentation](https://gratheon.com/docs/API/REST%20APIs)
 
 ## Installation & development
 Checkout grafana first from https://github.com/Gratheon/grafana
@@ -53,7 +41,7 @@ Start those pods to have influx with docker-compose
 
 Then start telemetry api:
 ```bash
-make start
+just start
 ```
 
 ## Architecture

@@ -1,6 +1,8 @@
 
 // local dependencies
 import { logger } from './logger';
+import {addMetricHandler} from "./controllers/add-metric";
+import {errorCodes, TelemetryServerError} from "./error";
 
 function err(code) {
 	return {
@@ -12,27 +14,42 @@ function err(code) {
 export const resolvers = {
 	Query: {
 		telemetry:  (_, __, ctx) => {
-
-// 			let queryClient = client.getQueryApi(org)
-// let fluxQuery = `from(bucket: "beehive_metrics")
-//  |> range(start: -10m)
-//  |> filter(fn: (r) => r._measurement == "measurement1")`
-
-// queryClient.queryRows(fluxQuery, {
-//   next: (row, tableMeta) => {
-//     const tableObject = tableMeta.toObject(row)
-//     console.log(tableObject)
-//   },
-//   error: (error) => {
-//     console.error('\nError', error)
-//   },
-//   complete: () => {
-//     console.log('\nSuccess')
-//   },
-// })
-
 			logger.info(`Query.telemetry queried: ${ctx.uid}`);
 			return "hi"
+		}
+	},
+	Mutation: {
+		addMetric: async (_, { hiveId, fields }, ctx) => {
+			logger.info(`Mutation.addMetric called: ${ctx.uid}`);
+
+			try {
+				await addMetricHandler({
+					hive_id: hiveId,
+					fields
+				});
+			} catch (e) {
+				if (e instanceof TelemetryServerError) {
+					logger.errorEnriched('Error writing to InfluxDB', e);
+
+					return {
+						__typename: 'Error',
+						message: e.message,
+						code: e.errorCode
+					};
+				} else {
+					logger.errorEnriched('Error writing to InfluxDB', e);
+					return {
+						__typename: 'Error',
+						message: 'Internal Server Error',
+						code: errorCodes.internalServerError
+					};
+				}
+			}
+
+			return {
+				__typename: "AddMetricMessage",
+				message: 'OK'
+			};
 		}
 	}
 }
