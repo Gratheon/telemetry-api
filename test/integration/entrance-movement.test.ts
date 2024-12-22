@@ -17,12 +17,28 @@ describe('POST /entrance/v1/movement', () => {
             expect(result.error).toBe('Bad Request: hiveId not provided');
         });
 
+        it('empty body should fail with missing sectionId', async () => {
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',},
+                body: JSON.stringify({
+                    hiveId: 123,
+                    // <-- missing sectionId
+                })
+            });
+
+            const result = await response.json();
+            expect(response.status).toBe(400);
+            expect(result.error).toBe('Bad Request: sectionId not provided');
+        });
+
         it('empty body should fail with missing fields', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json',},
                 body: JSON.stringify({
                     hiveId: 123,
+                    sectionId: 123,
                     // <-- missing fields
                 })
             });
@@ -44,6 +60,7 @@ describe('POST /entrance/v1/movement', () => {
             },
             body: JSON.stringify({
                 "hiveId": 123,
+                "sectionId": 345,
                 "beesIn": 5,
                 "beesOut": 3,
             })

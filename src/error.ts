@@ -14,5 +14,7 @@ export const errorCodes = {
     fieldsMissing: 4002,
     invalidTimeRange: 4003,
 
+    sectionIdMissing: 4004,
+
     internalServerError: 5000,
 }
