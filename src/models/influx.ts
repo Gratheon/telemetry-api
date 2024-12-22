@@ -20,6 +20,7 @@ export function initInflux() {
 }
 
 const beehiveMetrics = 'beehive_metrics'
+const entranceObserver = 'entrance_observer'
 
 export async function readMetricsFromInflux(influx, hiveId, rangeMin=60, field:string) {
 	let queryApi = influx.getQueryApi(config.influxOrg)
@@ -32,7 +33,6 @@ export async function readMetricsFromInflux(influx, hiveId, rangeMin=60, field:s
  |> filter(fn: (r) => r._field == "${field}")
  |> sort(columns: ["_time"])
  `
-
 
 	return new Promise((resolve, reject) => {
 		const results = [];
@@ -71,6 +71,25 @@ export async function writeBeehiveMetricsToInflux(influx, hiveId, fields) {
 
 	if (fields.weightKg != null) {
 		point.floatField("weightKg", fields.weightKg)
+	}
+
+
+	writeClient.writePoint(point)
+	await writeClient.flush()
+}
+
+export async function writeEntranceMovementToInflux(influx, hiveId, beesOut, beesIn) {
+	let writeClient = influx.getWriteApi(config.influxOrg, config.influxBucket, 'ns')
+
+	let point = new Point(entranceObserver).tag('hiveId', hiveId)
+
+
+	if (beesOut != null) {
+		point.floatField("beesOut", beesOut)
+	}
+
+	if (beesIn != null) {
+		point.floatField("beesIn", beesIn)
 	}
 
 

@@ -1,7 +1,7 @@
 import {writeBeehiveMetricsToInflux} from "../models/influx";
 import {errorCodes, TelemetryServerError} from "../error";
 
-export async function addMetricHandler(influx, input) {
+export async function addIoTMetrics(influx, input) {
     if (!input.hiveId) {
         throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
     }

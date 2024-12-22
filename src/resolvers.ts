@@ -1,7 +1,9 @@
 // local dependencies
 import {logger} from './logger';
-import {addMetricHandler} from "./controllers/add-metric";
 import {errorCodes, TelemetryServerError} from "./error";
+
+import {addIoTMetrics} from "./controllers/iot-metrics";
+
 import {initInflux, readMetricsFromInflux} from "./models/influx";
 
 function wrapGraphqlError(code, message) {
@@ -89,7 +91,7 @@ export const resolvers = {
             logger.info(`Mutation.addMetric called: ${ctx.uid}`);
 
             try {
-                await addMetricHandler(influxClient, {
+                await addIoTMetrics(influxClient, {
                     hiveId,
                     fields
                 });
