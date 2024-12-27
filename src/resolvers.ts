@@ -4,7 +4,7 @@ import {errorCodes, TelemetryServerError} from "./error";
 
 import {addIoTMetrics} from "./controllers/iot-metrics";
 
-import {initInflux, readMetricsFromInflux} from "./models/influx";
+import {initInflux, readMetricsFromInflux, readAggregatedMetricsFromInfluxForToday} from "./models/influx";
 
 function wrapGraphqlError(code, message) {
     return {
@@ -84,6 +84,23 @@ export const resolvers = {
             return wrapMetricsResponse(()=>{
                 return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "weightKg")
             })
+        },
+        entranceMovementToday: async (_, {hiveId, boxId}, ctx) => {
+            try{
+                return {
+                    __typename: "BeeMovementInOutResult",
+                    ... (await readAggregatedMetricsFromInfluxForToday(influxClient, hiveId, boxId, ["beesIn", "beesOut"]))
+                };
+            }
+            catch(err) {
+                logger.errorEnriched('Error reading from InfluxDB', err);
+
+                if (err instanceof TelemetryServerError) {
+                    return wrapGraphqlError(err.errorCode, err.message);
+                } else {
+                    return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
+                }
+            }
         }
     },
     Mutation: {

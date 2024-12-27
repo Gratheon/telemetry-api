@@ -29,7 +29,7 @@ describe('POST /entrance/v1/movement', () => {
 
             const result = await response.json();
             expect(response.status).toBe(400);
-            expect(result.error).toBe('Bad Request: sectionId not provided');
+            expect(result.error).toBe('Bad Request: boxId not provided');
         });
 
         it('empty body should fail with missing fields', async () => {
@@ -38,7 +38,7 @@ describe('POST /entrance/v1/movement', () => {
                 headers: { 'Content-Type': 'application/json',},
                 body: JSON.stringify({
                     hiveId: 123,
-                    sectionId: 123,
+                    boxId: 123,
                     // <-- missing fields
                 })
             });
@@ -59,10 +59,11 @@ describe('POST /entrance/v1/movement', () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                "hiveId": 123,
-                "sectionId": 345,
-                "beesIn": 5,
-                "beesOut": 3,
+                "hiveId": 10,
+                "boxId": 41,
+
+                "beesIn": Math.ceil(Math.random()*100),
+                "beesOut": Math.ceil(Math.random()*100),
             })
         });
 
