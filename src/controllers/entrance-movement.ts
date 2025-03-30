@@ -1,7 +1,7 @@
-import {writeBeehiveMetricsToInflux, writeEntranceMovementToInflux} from "../models/influx";
+import {writeEntranceMovementToMySQL} from "../models/mysql";
 import {errorCodes, TelemetryServerError} from "../error";
 
-export async function addEntranceMovement(influx, input) {
+export async function addEntranceMovement(input) {
     if (!input.hiveId) {
         throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
     }
@@ -13,6 +13,5 @@ export async function addEntranceMovement(influx, input) {
         throw new TelemetryServerError("Bad Request: beesOut or beesIn are not provided", errorCodes.fieldsMissing, 400);
     }
 
-    await writeEntranceMovementToInflux(influx, input.hiveId, input.boxId, input.beesOut, input.beesIn);
+    await writeEntranceMovementToMySQL(input.hiveId, input.boxId, input.beesOut, input.beesIn);
 }
-

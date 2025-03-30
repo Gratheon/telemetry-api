@@ -4,7 +4,7 @@ import {errorCodes, TelemetryServerError} from "./error";
 
 import {addIoTMetrics} from "./controllers/iot-metrics";
 
-import {initInflux, readMetricsFromInflux, readAggregatedMetricsFromInfluxForToday} from "./models/influx";
+import {readMetricsFromMySQL, readAggregatedMetricsFromMySQLForToday} from "./models/mysql";
 
 function wrapGraphqlError(code, message) {
     return {
@@ -13,8 +13,6 @@ function wrapGraphqlError(code, message) {
         message
     };
 }
-
-let influxClient = initInflux();
 
 function validateTimeRange(timeRangeMin) {
     if (timeRangeMin == null) {
@@ -43,7 +41,7 @@ async function wrapMetricsResponse(f: () => Promise<any>) {
         };
     }
     catch(err) {
-        logger.errorEnriched('Error reading from InfluxDB', err);
+        logger.errorEnriched('Error reading from MySQL', err);
 
         if (err instanceof TelemetryServerError) {
             return wrapGraphqlError(err.errorCode, err.message);
@@ -62,7 +60,7 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "temperatureCelsius")
+                return readMetricsFromMySQL(hiveId, timeRangeMin, "temperatureCelsius")
             })
         },
         humidityPercent: async (_, {hiveId, timeRangeMin}, ctx) => {
@@ -72,7 +70,7 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "humidityPercent")
+                return readMetricsFromMySQL(hiveId, timeRangeMin, "humidityPercent")
             })
         },
         weightKg: async (_, {hiveId, timeRangeMin}, ctx) => {
@@ -82,18 +80,18 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromInflux(influxClient, hiveId, timeRangeMin, "weightKg")
+                return readMetricsFromMySQL(hiveId, timeRangeMin, "weightKg")
             })
         },
         entranceMovementToday: async (_, {hiveId, boxId}, ctx) => {
             try{
                 return {
                     __typename: "BeeMovementInOutResult",
-                    ... (await readAggregatedMetricsFromInfluxForToday(influxClient, hiveId, boxId, ["beesIn", "beesOut"]))
+                    ... (await readAggregatedMetricsFromMySQLForToday(hiveId, boxId, ["beesIn", "beesOut"]))
                 };
             }
             catch(err) {
-                logger.errorEnriched('Error reading from InfluxDB', err);
+                logger.errorEnriched('Error reading from MySQL', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);
@@ -108,12 +106,12 @@ export const resolvers = {
             logger.info(`Mutation.addMetric called: ${ctx.uid}`);
 
             try {
-                await addIoTMetrics(influxClient, {
+                await addIoTMetrics({
                     hiveId,
                     fields
                 });
             } catch (err) {
-                logger.errorEnriched('Error writing to InfluxDB', err);
+                logger.errorEnriched('Error writing to MySQL', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);

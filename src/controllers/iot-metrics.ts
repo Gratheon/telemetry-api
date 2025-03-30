@@ -1,7 +1,7 @@
-import {writeBeehiveMetricsToInflux} from "../models/influx";
+import {writeBeehiveMetricsToMySQL} from "../models/mysql";
 import {errorCodes, TelemetryServerError} from "../error";
 
-export async function addIoTMetrics(influx, input) {
+export async function addIoTMetrics(input) {
     if (!input.hiveId) {
         throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
     }
@@ -10,6 +10,5 @@ export async function addIoTMetrics(influx, input) {
         throw new TelemetryServerError("Bad Request: fields not provided", errorCodes.fieldsMissing, 400);
     }
 
-    await writeBeehiveMetricsToInflux(influx, input.hiveId, input.fields);
+    await writeBeehiveMetricsToMySQL(input.hiveId, input.fields);
 }
-

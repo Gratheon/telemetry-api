@@ -7,28 +7,9 @@ services:
     environment:
       - PORT=8600
       - ENV_ID=dev
-      - INFLUXDB_HOST=influxdb
-      - INFLUXDB_PORT=8086
-      - INFLUXDB_DATABASE=beehive_metrics
     tty: true
     ports:
       - 8600:8600
     volumes:
       - .:/app/
     restart: always
-
-  influxdb:
-    image: influxdb:2.7.6
-    ports:
-      - '5300:8086'
-    environment:
-      - DOCKER_INFLUXDB_INIT_BUCKET=beehive_metrics
-      - DOCKER_INFLUXDB_INIT_RETENTION=1w
-      - INFLUXDB_ADMIN_ENABLED=true
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=admin
-      - INFLUXDB_HTTP_AUTH_ENABLED=true
-      - INFLUXDB_USER=telegraf
-      - INFLUXDB_USER_PASSWORD=telegraf
-    volumes:
-      - ./influxdb:/var/lib/influxdb2:rw

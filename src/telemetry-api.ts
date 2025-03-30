@@ -13,6 +13,7 @@ import { registerSchema } from "./schema-registry";
 import { logger } from './logger'
 import { registerRestAPI } from "./restAPI";
 import { ApolloServerPluginInlineTraceDisabled } from "apollo-server-core";
+import { initStorage } from "./storage";
 
 Sentry.init({
 	dsn: config.sentryDsn,
@@ -85,7 +86,9 @@ async function startApolloServer(app, typeDefs, resolvers) {
 		reply.send({ hello: 'world' })
 	})
 
-	try {
+	try {		
+		await initStorage(logger);
+		
 		await registerSchema(schema);
 		logger.info('starting telemetry-api apollo server');
 		await startApolloServer(app, schema, resolvers);

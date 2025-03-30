@@ -1,16 +1,13 @@
 // global dependencies
 import fastifyRawBody from "fastify-raw-body";
-import { Point } from "@influxdata/influxdb-client";
 
 // local dependencies
 import { logger } from "./logger";
 
 import {addIoTMetrics} from "./controllers/iot-metrics";
 import {TelemetryServerError} from "./error";
-import {initInflux} from "./models/influx";
 import {addEntranceMovement} from "./controllers/entrance-movement";
 
-let influxClient = initInflux();
 
 export function registerRestAPI(app) {
   app.register(fastifyRawBody, {
@@ -31,19 +28,19 @@ export function registerRestAPI(app) {
       logger.info("Received metric data", requestInput);
 
       try {
-        await addIoTMetrics(influxClient, requestInput);
+        await addIoTMetrics(requestInput);
         res.status(200).send({
             message: "OK",
         });
       } catch (e: any) {
         if (e instanceof TelemetryServerError) {
-          logger.errorEnriched("Error writing to InfluxDB", e);
+          logger.errorEnriched("Error writing to MySQL", e);
           res.status(e.httpStatus)
             .send(JSON.stringify({
               error: e.message
             }));
         } else {
-            logger.errorEnriched("Error writing to InfluxDB", e);
+            logger.errorEnriched("Error writing to MySQL", e);
             res.status(500)
                 .send(JSON.stringify({
                   error: "Internal Server Error"
@@ -63,19 +60,19 @@ export function registerRestAPI(app) {
       logger.info("Received metric data", requestInput);
 
       try {
-        await addEntranceMovement(influxClient, requestInput);
+        await addEntranceMovement(requestInput);
         res.status(200).send({
             message: "OK",
         });
       } catch (e: any) {
         if (e instanceof TelemetryServerError) {
-          logger.errorEnriched("Error writing to InfluxDB", e);
+          logger.errorEnriched("Error writing to MySQL", e);
           res.status(e.httpStatus)
             .send(JSON.stringify({
               error: e.message
             }));
         } else {
-            logger.errorEnriched("Error writing to InfluxDB", e);
+            logger.errorEnriched("Error writing to MySQL", e);
             res.status(500)
                 .send(JSON.stringify({
                   error: "Internal Server Error"

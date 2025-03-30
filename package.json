@@ -4,7 +4,7 @@
   "description": "Logging timeseries IoT data into a database",
   "dependencies": {
     "@apollo/federation": "0.38.1",
-    "@influxdata/influxdb-client": "1.33.2",
+    "@databases/mysql": "6.0.0",
     "@sentry/integrations": "7.69.0",
     "@sentry/node": "7.69.0",
     "apollo-server-core": "3.4.0",

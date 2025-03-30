@@ -35,13 +35,6 @@ This service provides two types of APIs
 
 
 ## Installation & development
-Checkout grafana first from https://github.com/Gratheon/grafana
-Start those pods to have influx with docker-compose
-- Open http://localhost:5300/
-- login into influxdb
-- open Load Data -> API Tokens -> Generate API Token so that telemetry-api could write data to influxdb
-- Change `INFLUXDB_TOKEN` in docker-compose.dev.yml and set it to the token you generated
-
 Then start telemetry api:
 ```bash
 just start
@@ -49,14 +42,17 @@ just start
 
 ## Architecture
 
+We are NOT using timeseries DB (influx, clickhouse) because we don't have manpower to maintain multiple storage engines at this time.
+So we're relying on MySQL for ease of management, even though its not as efficient.
+
 ```mermaid
 flowchart LR
 	hardware-beehive-sensors[<a href="https://github.com/Gratheon/hardware-beehive-sensors">hardware-beehive-sensors</a>] -."send aggregate (5sec)\n metric value".-> telemetry-api
 
 	telemetry-api --"update beehive entrance daily traffic counters"--> mysql[(<a href="https://github.com/Gratheon/mysql">mysql</a>)]
 	beehive-entrance-video-processor[<a href="https://github.com/Gratheon/beehive-entrance-video-processor">beehive-entrance-video-processor</a>] -."send entrance\n traffic metric".-> telemetry-api
-	telemetry-api --"store bee traffic timeseries" --> influx[(<a href="https://github.com/Gratheon/grafana">influx</a>)]
-	grafana[(<a href="https://github.com/Gratheon/grafana">grafana</a>)] --"fetch history"--> influx
+	telemetry-api --"store bee traffic timeseries" --> mysql
+	grafana[(<a href="https://github.com/Gratheon/grafana">grafana</a>)] --"fetch history"--> mysql
 
 	telemetry-api --"verify API tokens for REST calls"--> user-cycle[<a href="https://github.com/Gratheon/user-cycle">user-cycle</a>]
 	web-app[<a href="https://github.com/Gratheon/web-app">web-app</a>] --"display advanced configureable graphs"--> grafana
