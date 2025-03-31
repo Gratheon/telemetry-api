@@ -29,23 +29,28 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
     
-    - name: Run tests
+    - name: Build and start containers
       run: |
-        # Create a directory for test results
+        # Build the container
+        docker compose -f docker-compose.test.yml build
+        
+        # Start the container in detached mode
+        docker compose -f docker-compose.test.yml up -d
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Save test logs
+      if: always()
+      run: |
         mkdir -p test-results
-        
-        # Run the tests using Docker Compose V2
-        docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
-        
-        # Save test logs
         docker compose -f docker-compose.test.yml logs > test-results/docker-logs.txt
-        
-        # Check if tests passed by looking at the exit code of the test container
-        EXIT_CODE=$(docker compose -f docker-compose.test.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l)
-        if [ $EXIT_CODE -ne 0 ]; then
-          echo "::error::Tests failed. See logs for details."
-          exit 1
-        fi
     
     - name: Upload test results
       if: always()  # Run even if the previous step fails

@@ -15,5 +15,6 @@
 		"<rootDir>/test/integration/*.test.(ts|js)"
 	],
 	"testTimeout": 60000,
-	"collectCoverage": false
+	"collectCoverage": false,
+	"globalSetup": "<rootDir>/test/integration/globalSetup.ts"
   }
