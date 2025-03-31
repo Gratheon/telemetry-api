@@ -14,8 +14,37 @@ services:
       - TEST_AUTH_BYPASS_ENABLED=true
       # Mock the user-cycle service for token validation
       - USER_CYCLE_GRAPHQL_URL=http://localhost:4000/graphql
+      # MySQL connection settings
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - MYSQL_DATABASE=telemetry-api
     ports:
       - 8600:8600
     volumes:
       - .:/app/
       - /app/node_modules
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=telemetry-api
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-test-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "test", "-ptest"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-test-data:
