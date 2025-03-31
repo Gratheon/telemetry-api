@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import { HEALTH_URL } from './utils/api-config';
 
 /**
  * Wait for the telemetry-api server to be ready before running tests
@@ -6,12 +7,11 @@ import fetch from 'cross-fetch';
  * or until the timeout is reached
  */
 async function waitForServerToBeReady(timeoutSeconds = 60) {
-  const serverUrl = 'http://localhost:8600/health';
-  console.log(`Waiting for server to be ready at ${serverUrl}...`);
+  console.log(`Waiting for server to be ready at ${HEALTH_URL}...`);
   
   for (let i = 0; i < timeoutSeconds; i++) {
     try {
-      const response = await fetch(serverUrl);
+      const response = await fetch(HEALTH_URL);
       if (response.status === 200) {
         console.log('Server is ready!');
         return true;

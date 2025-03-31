@@ -3,11 +3,8 @@ import {expect, describe, it, beforeAll, afterAll, jest} from '@jest/globals';
 // Import setup to ensure mocks are properly configured
 import './setup';
 
-// port from docker-compose.test.yml
-const URL = 'http://localhost:8600/iot/v1/metrics';
-
-// Special header for testing
-const TEST_AUTH_HEADER = 'X-Test-Auth-Bypass';
+// Import API configuration
+import { IOT_METRICS_URL, TEST_AUTH_HEADER } from './utils/api-config';
 
 // Special test token that will be accepted without validation
 const TEST_TOKEN = 'test-api-token';
@@ -16,7 +13,7 @@ const INVALID_TOKEN = 'invalid-test-token';
 describe('POST /iot/v1/metrics', () => {
     describe('validation errors', () => {
         it('empty body should fail with missing hiveId', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(IOT_METRICS_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -31,7 +28,7 @@ describe('POST /iot/v1/metrics', () => {
         });
 
         it('empty body should fail with missing fields', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(IOT_METRICS_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -49,7 +46,7 @@ describe('POST /iot/v1/metrics', () => {
         });
 
         it('empty body should fail with fields as empty object', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(IOT_METRICS_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -69,7 +66,7 @@ describe('POST /iot/v1/metrics', () => {
 
     // success case
     it('should respond with message:OK in case of success', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -93,7 +90,7 @@ describe('POST /iot/v1/metrics', () => {
 
 describe('API Token Authentication', () => {
     it('should reject requests without an authorization header', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -114,7 +111,7 @@ describe('API Token Authentication', () => {
     });
 
     it('should reject requests with an invalid token format', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -136,7 +133,7 @@ describe('API Token Authentication', () => {
     });
 
     it('should reject requests with an empty bearer token', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,7 +155,7 @@ describe('API Token Authentication', () => {
     });
 
     it('should reject requests with an invalid token', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -180,7 +177,7 @@ describe('API Token Authentication', () => {
     });
 
     it('should accept requests with a valid token', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(IOT_METRICS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

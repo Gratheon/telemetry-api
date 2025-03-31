@@ -3,16 +3,13 @@ import {expect, describe, it} from '@jest/globals';
 // Import setup to ensure mocks are properly configured
 import './setup';
 
-// port from docker-compose.test.yml
-const URL = 'http://localhost:8600/entrance/v1/movement';
-
-// Special header for testing
-const TEST_AUTH_HEADER = 'X-Test-Auth-Bypass';
+// Import API configuration
+import { ENTRANCE_MOVEMENT_URL, TEST_AUTH_HEADER } from './utils/api-config';
 
 describe('POST /entrance/v1/movement', () => {
     describe('validation errors', () => {
         it('empty body should fail with missing hiveId', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(ENTRANCE_MOVEMENT_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -27,7 +24,7 @@ describe('POST /entrance/v1/movement', () => {
         });
 
         it('empty body should fail with missing sectionId', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(ENTRANCE_MOVEMENT_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -45,7 +42,7 @@ describe('POST /entrance/v1/movement', () => {
         });
 
         it('empty body should fail with missing fields', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(ENTRANCE_MOVEMENT_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -64,11 +61,9 @@ describe('POST /entrance/v1/movement', () => {
         });
     });
 
-
-
     // success case
     it('should respond with message:OK in case of success', async () => {
-        let response = await fetch(URL, {
+        let response = await fetch(ENTRANCE_MOVEMENT_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

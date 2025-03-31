@@ -45,6 +45,7 @@ jobs:
           --network=$(docker compose -f docker-compose.test.yml ps -q | xargs docker inspect -f '{{.HostConfig.NetworkMode}}' | head -n 1) \
           -v $(pwd):/app \
           -w /app \
+          -e CI=true \
           node:20-alpine \
           sh -c "npm ci && npm test"
     

@@ -17,8 +17,12 @@
   },
   "scripts": {
     "build": "tsc -p ./src/config/tsconfig.json",
-    "test": "npm run test:integration",
+    "test": "npm run test:local",
+    "test:local": "./node_modules/.bin/jest --config ./test/integration/jest.coverage.json --detectOpenHandles --forceExit",
     "test:integration": "./node_modules/.bin/jest --config ./test/integration/jest.coverage.json --detectOpenHandles --forceExit",
+    "test:docker": "docker compose -f docker-compose.test.yml up --build --abort-on-container-exit",
+    "test:docker:start": "docker compose -f docker-compose.test.yml up -d",
+    "test:docker:stop": "docker compose -f docker-compose.test.yml down",
     "dev": "ENV_ID=dev nodemon app/telemetry-api.js",
     "start": "ENV_ID=prod node app/telemetry-api.js",
     "deploy": "make"
