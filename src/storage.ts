@@ -65,6 +65,7 @@ export async function initStorage(logger) {
 async function migrate(logger) {
   try {
     await db.query(sql`CREATE TABLE IF NOT EXISTS _db_migrations (
+		id INT AUTO_INCREMENT PRIMARY KEY,
 		hash VARCHAR(255),
 		filename VARCHAR(255),
 		executionTime DATETIME
