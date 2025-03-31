@@ -18,3 +18,4 @@ export const TEST_AUTH_HEADER = 'X-Test-Auth-Bypass';
 export const ENTRANCE_MOVEMENT_URL = `${API_BASE_URL}/entrance/v1/movement`;
 export const HEALTH_URL = `${API_BASE_URL}/health`;
 export const IOT_METRICS_URL = `${API_BASE_URL}/iot/v1/metrics`;
+export const GRAPHQL_URL = `${API_BASE_URL}/graphql`;

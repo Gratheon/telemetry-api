@@ -1,17 +1,18 @@
 import {expect} from '@jest/globals';
 
-// port from docker-compose.test.yml
-const URL = 'http://localhost:8600/graphql';
+// Import API configuration
+import { GRAPHQL_URL, TEST_AUTH_HEADER } from './utils/api-config';
 
 const hiveId = 7;
 describe('POST /graphql', () => {
     describe('addMetric', () => {
         describe('validation errors', () => {
             it('empty body should fail with missing fields', async () => {
-                let response = await fetch(URL, {
+                let response = await fetch(GRAPHQL_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        [TEST_AUTH_HEADER]: 'true'
                     },
                     body: JSON.stringify({
                         "query": `
@@ -47,10 +48,11 @@ describe('POST /graphql', () => {
     describe('temperatureCelsius', () => {
         describe('with timeRangeMin param', () => {
             async function fetchWithTimeRange(timeRange) {
-                let response = await fetch(URL, {
+                let response = await fetch(GRAPHQL_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        [TEST_AUTH_HEADER]: 'true'
                     },
                     body: JSON.stringify({
                         "query": `
@@ -107,10 +109,11 @@ describe('POST /graphql', () => {
         });
 
         it('should return temperature data', async () => {
-            let response = await fetch(URL, {
+            let response = await fetch(GRAPHQL_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    [TEST_AUTH_HEADER]: 'true'
                 },
                 body: JSON.stringify({
                     "query": `
