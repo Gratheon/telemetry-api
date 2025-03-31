@@ -5,7 +5,12 @@ on:
   workflow_dispatch:
 
 jobs:
+  # This is a reference to the test job in the test.yml workflow
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test  # This ensures deploy only runs if test passes
     runs-on: self-hosted
     steps:
       - name: pull

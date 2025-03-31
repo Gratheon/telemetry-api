@@ -7,6 +7,8 @@ on:
     branches: [ main, master ]
   # Allow manual triggering
   workflow_dispatch:
+  # Make this workflow callable from other workflows
+  workflow_call:
 
 jobs:
   test:
@@ -32,14 +34,14 @@ jobs:
         # Create a directory for test results
         mkdir -p test-results
         
-        # Run the tests
-        docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+        # Run the tests using Docker Compose V2
+        docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
         
         # Save test logs
-        docker-compose -f docker-compose.test.yml logs > test-results/docker-logs.txt
+        docker compose -f docker-compose.test.yml logs > test-results/docker-logs.txt
         
         # Check if tests passed by looking at the exit code of the test container
-        EXIT_CODE=$(docker-compose -f docker-compose.test.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l)
+        EXIT_CODE=$(docker compose -f docker-compose.test.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l)
         if [ $EXIT_CODE -ne 0 ]; then
           echo "::error::Tests failed. See logs for details."
           exit 1
@@ -56,5 +58,5 @@ jobs:
     - name: Clean up
       if: always()  # Run even if the previous steps fail
       run: |
-        docker-compose -f docker-compose.test.yml down -v
+        docker compose -f docker-compose.test.yml down -v
         docker system prune -f
