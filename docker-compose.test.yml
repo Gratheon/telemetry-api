@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  telemetry-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "npm run build && npm test"
+    environment:
+      - PORT=8600
+      - ENV_ID=test
+      - NODE_ENV=test
+    ports:
+      - 8600:8600
+    volumes:
+      - .:/app/

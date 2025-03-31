@@ -1,14 +1,23 @@
-import {expect} from '@jest/globals';
+import {expect, describe, it} from '@jest/globals';
+
+// Import setup to ensure mocks are properly configured
+import './setup';
 
 // port from docker-compose.test.yml
 const URL = 'http://localhost:8600/entrance/v1/movement';
+
+// Special header for testing
+const TEST_AUTH_HEADER = 'X-Test-Auth-Bypass';
 
 describe('POST /entrance/v1/movement', () => {
     describe('validation errors', () => {
         it('empty body should fail with missing hiveId', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json',},
+                headers: { 
+                    'Content-Type': 'application/json',
+                    [TEST_AUTH_HEADER]: 'true'
+                },
                 body: JSON.stringify({}) // <-- empty body
             });
 
@@ -20,7 +29,10 @@ describe('POST /entrance/v1/movement', () => {
         it('empty body should fail with missing sectionId', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json',},
+                headers: { 
+                    'Content-Type': 'application/json',
+                    [TEST_AUTH_HEADER]: 'true'
+                },
                 body: JSON.stringify({
                     hiveId: 123,
                     // <-- missing sectionId
@@ -35,7 +47,10 @@ describe('POST /entrance/v1/movement', () => {
         it('empty body should fail with missing fields', async () => {
             let response = await fetch(URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json',},
+                headers: { 
+                    'Content-Type': 'application/json',
+                    [TEST_AUTH_HEADER]: 'true'
+                },
                 body: JSON.stringify({
                     hiveId: 123,
                     boxId: 123,
@@ -57,6 +72,7 @@ describe('POST /entrance/v1/movement', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                [TEST_AUTH_HEADER]: 'true'
             },
             body: JSON.stringify({
                 "hiveId": 10,

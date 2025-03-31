@@ -7,6 +7,7 @@ import { logger } from "./logger";
 import {addIoTMetrics} from "./controllers/iot-metrics";
 import {TelemetryServerError} from "./error";
 import {addEntranceMovement} from "./controllers/entrance-movement";
+import { authenticateApiToken } from "./middleware/auth";
 
 
 export function registerRestAPI(app) {
@@ -18,11 +19,17 @@ export function registerRestAPI(app) {
     routes: [], // array of routes, **`global`** will be ignored, wildcard routes not supported
   });
 
+  // Register the authentication middleware as a preHandler hook
+  const authenticateHook = async (req, res) => {
+    await authenticateApiToken(req, res, () => {});
+  };
+
   app.post("/iot/v1/metrics", {
     config: {
       // add the rawBody to this route. if false, rawBody will be disabled when global is true
       rawBody: true,
     },
+    preHandler: authenticateHook,
     handler: async (req, res) => {
       const requestInput = req.body;
       logger.info("Received metric data", requestInput);
@@ -55,6 +62,7 @@ export function registerRestAPI(app) {
       // add the rawBody to this route. if false, rawBody will be disabled when global is true
       rawBody: true,
     },
+    preHandler: authenticateHook,
     handler: async (req, res) => {
       const requestInput = req.body;
       logger.info("Received metric data", requestInput);

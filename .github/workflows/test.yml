@@ -1,0 +1,60 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+    
+    - name: Run tests
+      run: |
+        # Create a directory for test results
+        mkdir -p test-results
+        
+        # Run the tests
+        docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+        
+        # Save test logs
+        docker-compose -f docker-compose.test.yml logs > test-results/docker-logs.txt
+        
+        # Check if tests passed by looking at the exit code of the test container
+        EXIT_CODE=$(docker-compose -f docker-compose.test.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l)
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "::error::Tests failed. See logs for details."
+          exit 1
+        fi
+    
+    - name: Upload test results
+      if: always()  # Run even if the previous step fails
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 7
+    
+    - name: Clean up
+      if: always()  # Run even if the previous steps fail
+      run: |
+        docker-compose -f docker-compose.test.yml down -v
+        docker system prune -f
