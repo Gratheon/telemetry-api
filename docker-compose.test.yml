@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: node /app/app/telemetry-api.js
+    command: sh -c "npm ci && npm run build && node /app/app/telemetry-api.js"
     environment:
       - PORT=8600
       - ENV_ID=test
