@@ -15,6 +15,9 @@ import { registerRestAPI } from "./restAPI";
 import { ApolloServerPluginInlineTraceDisabled } from "apollo-server-core";
 import { initStorage } from "./storage";
 
+// Add root handler import
+import { rootHandler } from "./handlers/rootHandler";
+
 Sentry.init({
 	dsn: config.sentryDsn,
 	environment: process.env.ENV_ID,
@@ -81,6 +84,8 @@ async function startApolloServer(app, typeDefs, resolvers) {
 
 		reply.status(500).send({ error: "Something went wrong" });
 	});
+
+	app.get('/', rootHandler);
 
 	app.get('/health', (request, reply) => {
 		reply.send({ hello: 'world' })
