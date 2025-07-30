@@ -1,5 +1,5 @@
 // local dependencies
-import config from '../config/config.default';
+import config from '../config/';
 import { logger } from '../logger';
 import { TelemetryServerError } from '../error';
 import fetch from 'cross-fetch';
