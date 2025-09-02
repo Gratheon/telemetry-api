@@ -9,7 +9,7 @@ export async function addEntranceMovement(input) {
         throw new TelemetryServerError("Bad Request: boxId not provided", errorCodes.boxIdMissing, 400);
     }
 
-    if (input.beesOut =="" || input.beesIn == "") {
+    if (input.beesOut == null || input.beesIn == null) {
         throw new TelemetryServerError("Bad Request: beesOut or beesIn are not provided", errorCodes.fieldsMissing, 400);
     }
 
