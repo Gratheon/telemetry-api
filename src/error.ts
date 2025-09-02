@@ -13,8 +13,9 @@ export const errorCodes = {
     hiveIdMissing: 4001,
     fieldsMissing: 4002,
     invalidTimeRange: 4003,
-
     boxIdMissing: 4004,
+
+    positiveValuesOnly: 4005,
 
     internalServerError: 5000,
 }
