@@ -17,6 +17,10 @@ type Query {
 type BeeMovementInOutResult {
 	beesIn: Float
 	beesOut: Float
+	netFlow: Float
+	avgSpeed: Float
+	p95Speed: Float
+	stationaryBees: Int
 }
 
 type MetricFloat {

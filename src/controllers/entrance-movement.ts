@@ -16,5 +16,14 @@ export async function addEntranceMovement(input) {
     if (input.beesOut < 0 || input.beesIn < 0) {
         throw new TelemetryServerError("Bad Request: beesOut or beesIn cannot be negative", errorCodes.positiveValuesOnly, 400);
     }
-    await writeEntranceMovementToMySQL(input.hiveId, input.boxId, input.beesOut, input.beesIn);
+    await writeEntranceMovementToMySQL(
+        input.hiveId,
+        input.boxId,
+        input.beesOut,
+        input.beesIn,
+        input.netFlow,
+        input.avgSpeed,
+        input.p95Speed,
+        input.stationaryBees
+    );
 }

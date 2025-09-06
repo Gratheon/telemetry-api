@@ -75,6 +75,10 @@ describe('POST /entrance/v1/movement', () => {
 
                 "beesIn": Math.ceil(Math.random()*100),
                 "beesOut": Math.ceil(Math.random()*100),
+                "netFlow": Math.ceil(Math.random()*100),
+                "avgSpeed": Math.random()*10,
+                "p95Speed": Math.random()*20,
+                "stationaryBees": Math.ceil(Math.random()*5),
             })
         });
 
