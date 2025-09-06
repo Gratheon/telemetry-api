@@ -21,6 +21,7 @@ type BeeMovementInOutResult {
 	avgSpeed: Float
 	p95Speed: Float
 	stationaryBees: Int
+	detectedBees: Int
 }
 
 type MetricFloat {
