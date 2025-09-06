@@ -12,6 +12,7 @@ type Query {
 	humidityPercent(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	weightKg(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	entranceMovementToday(hiveId: ID!, boxId: ID!): BeeMovementInOutResult
+	entranceMovement(hiveId: ID!, boxId: ID!, timeFrom: DateTime!, timeTo: DateTime!): EntranceMovementResult
 }
 
 type BeeMovementInOutResult {
@@ -22,7 +23,28 @@ type BeeMovementInOutResult {
 	p95Speed: Float
 	stationaryBees: Int
 	detectedBees: Int
+	time: DateTime
 }
+
+type EntranceMovementRecord {
+	id: ID!
+	hiveId: ID!
+	boxId: ID!
+	beesOut: Float
+	beesIn: Float
+	time: DateTime!
+	netFlow: Float
+	avgSpeed: Float
+	p95Speed: Float
+	stationaryBees: Int
+	detectedBees: Int
+}
+
+type EntranceMovementList {
+	metrics: [EntranceMovementRecord]
+}
+
+union EntranceMovementResult = EntranceMovementList | TelemetryError
 
 type MetricFloat {
 	"""Timestamp of the metric. We use short-hand name to save bandwidth as it is a repeated metric"""

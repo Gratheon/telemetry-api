@@ -4,7 +4,11 @@ import {errorCodes, TelemetryServerError} from "./error";
 
 import {addIoTMetrics} from "./controllers/iot-metrics";
 
-import {readMetricsFromMySQL, readAggregatedMetricsFromMySQLForToday} from "./models/mysql";
+import {
+    readMetricsFromMySQL,
+    readAggregatedMetricsFromMySQLForToday,
+    readEntranceMovementFromMySQL
+} from "./models/mysql";
 
 function wrapGraphqlError(code, message) {
     return {
@@ -88,6 +92,23 @@ export const resolvers = {
                 return {
                     __typename: "BeeMovementInOutResult",
                     ... (await readAggregatedMetricsFromMySQLForToday(hiveId, boxId, ["beesIn", "beesOut"]))
+                };
+            }
+            catch(err) {
+                logger.errorEnriched('Error reading from MySQL', err);
+
+                if (err instanceof TelemetryServerError) {
+                    return wrapGraphqlError(err.errorCode, err.message);
+                } else {
+                    return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
+                }
+            }
+        },
+        entranceMovement: async (_, {hiveId, boxId, timeFrom, timeTo}, ctx) => {
+            try{
+                return {
+                    __typename: "EntranceMovementList",
+                    metrics: await readEntranceMovementFromMySQL(hiveId, boxId, timeFrom, timeTo)
                 };
             }
             catch(err) {

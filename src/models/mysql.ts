@@ -96,7 +96,8 @@ export async function readAggregatedMetricsFromMySQLForToday(
                 AVG(avg_speed_px_per_frame) as avgSpeed,
                 AVG(p95_speed_px_per_frame) as p95Speed,
                 SUM(stationary_bees_count) as stationaryBees,
-                SUM(detected_bees) as detectedBees
+                SUM(detected_bees) as detectedBees,
+                MAX(time) as time
             FROM 
                 entrance_observer
             WHERE 
@@ -107,9 +108,46 @@ export async function readAggregatedMetricsFromMySQLForToday(
         );
 
         // Return the first row or empty object if no rows
-        return rows[0] || { beesIn: 0, beesOut: 0, netFlow: 0, avgSpeed: 0, p95Speed: 0, stationaryBees: 0, detectedBees: 0 };
+        return rows[0] || { beesIn: 0, beesOut: 0, netFlow: 0, avgSpeed: 0, p95Speed: 0, stationaryBees: 0, detectedBees: 0, time: null };
     } catch (error) {
         logger.error(`Error reading aggregated metrics from MySQL: ${error}`);
+        throw error;
+    }
+}
+
+export async function readEntranceMovementFromMySQL(
+    hiveId: string,
+    boxId: string,
+    timeFrom: Date,
+    timeTo: Date
+) {
+    try {
+        const rows = await storage().query(
+            sql`SELECT
+                id,
+                hive_id as hiveId,
+                box_id as boxId,
+                bees_out as beesOut,
+                bees_in as beesIn,
+                time,
+                net_flow as netFlow,
+                avg_speed_px_per_frame as avgSpeed,
+                p95_speed_px_per_frame as p95Speed,
+                stationary_bees_count as stationaryBees,
+                detected_bees as detectedBees
+            FROM
+                entrance_observer
+            WHERE
+                hive_id = ${hiveId}
+                AND box_id = ${boxId}
+                AND time >= ${timeFrom}
+                AND time <= ${timeTo}
+            ORDER BY
+                time ASC`
+        );
+        return rows;
+    } catch (error) {
+        logger.error(`Error reading entrance movement from MySQL: ${error}`);
         throw error;
     }
 }
