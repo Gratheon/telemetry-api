@@ -25,6 +25,7 @@ export async function addEntranceMovement(input) {
         input.avgSpeed,
         input.p95Speed,
         input.stationaryBees,
-        input.detectedBees
+        input.detectedBees,
+        input.beeInteractions
     );
 }

@@ -91,7 +91,7 @@ export const resolvers = {
             try{
                 return {
                     __typename: "BeeMovementInOutResult",
-                    ... (await readAggregatedMetricsFromMySQLForToday(hiveId, boxId, ["beesIn", "beesOut"]))
+                    ... (await readAggregatedMetricsFromMySQLForToday(hiveId, boxId, ["beesIn", "beesOut", "beeInteractions"]))
                 };
             }
             catch(err) {

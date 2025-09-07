@@ -23,6 +23,7 @@ type BeeMovementInOutResult {
 	p95Speed: Float
 	stationaryBees: Int
 	detectedBees: Int
+	beeInteractions: Int
 	time: DateTime
 }
 
@@ -38,6 +39,7 @@ type EntranceMovementRecord {
 	p95Speed: Float
 	stationaryBees: Int
 	detectedBees: Int
+	beeInteractions: Int
 }
 
 type EntranceMovementList {
