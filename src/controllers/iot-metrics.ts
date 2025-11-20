@@ -2,13 +2,23 @@ import {writeBeehiveMetricsToMySQL} from "../models/mysql";
 import {errorCodes, TelemetryServerError} from "../error";
 
 export async function addIoTMetrics(input) {
-    if (!input.hiveId) {
-        throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
+    const metrics = Array.isArray(input) ? input : [input];
+
+    if (metrics.length === 0) {
+        throw new TelemetryServerError("Bad Request: no metrics provided", errorCodes.fieldsMissing, 400);
     }
 
-    if (!input.fields || Object.keys(input.fields).length === 0) {
-        throw new TelemetryServerError("Bad Request: fields not provided", errorCodes.fieldsMissing, 400);
-    }
+    for (const metric of metrics) {
+        if (!metric.hiveId) {
+            throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
+        }
 
-    await writeBeehiveMetricsToMySQL(input.hiveId, input.fields);
+        if (!metric.fields || Object.keys(metric.fields).length === 0) {
+            throw new TelemetryServerError("Bad Request: fields not provided", errorCodes.fieldsMissing, 400);
+        }
+
+        const timestamp = metric.timestamp ? new Date(metric.timestamp * 1000) : new Date();
+
+        await writeBeehiveMetricsToMySQL(metric.hiveId, metric.fields, timestamp);
+    }
 }

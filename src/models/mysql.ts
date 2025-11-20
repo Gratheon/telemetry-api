@@ -53,17 +53,19 @@ export async function writeBeehiveMetricsToMySQL(
         temperatureCelsius?: number;
         humidityPercent?: number;
         weightKg?: number;
-    }
+    },
+    timestamp: Date = new Date()
 ) {
     try {
         await storage().query(
             sql`INSERT INTO beehive_metrics 
-            (hive_id, temperature_celsius, humidity_percent, weight_kg) 
+            (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
             VALUES (
                 ${hiveId},
                 ${fields.temperatureCelsius !== undefined ? fields.temperatureCelsius : null},
                 ${fields.humidityPercent !== undefined ? fields.humidityPercent : null},
-                ${fields.weightKg !== undefined ? fields.weightKg : null}
+                ${fields.weightKg !== undefined ? fields.weightKg : null},
+                ${timestamp}
             )`
         );
     } catch (error) {
