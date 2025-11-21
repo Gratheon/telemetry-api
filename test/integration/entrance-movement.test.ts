@@ -6,8 +6,8 @@ import './setup';
 // Import API configuration
 import {ENTRANCE_MOVEMENT_URL, TEST_AUTH_HEADER} from './utils/api-config';
 
-const hiveId = 1;
-const boxId = 7;
+const hiveId = 5;
+const boxId = 16;
 
 
 describe('POST /entrance/v1/movement', () => {
@@ -190,7 +190,9 @@ describe('POST /entrance/v1/movement', () => {
       expect(response.status).toBe(200);
       expect(result.message).toBe('OK');
     });
+  });
 
+  describe('bulk data generation', () => {
     it('should accept 12 movements with hourly timestamps', async () => {
       const now = Math.floor(Date.now() / 1000);
       const movements = [];
@@ -223,6 +225,83 @@ describe('POST /entrance/v1/movement', () => {
       const result = await response.json();
       expect(response.status).toBe(200);
       expect(result.message).toBe('OK');
+    });
+
+    it('should accept month of movements with 5-minute intervals', async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const monthInSeconds = 30 * 24 * 60 * 60;
+      const fiveMinutesInSeconds = 5 * 60;
+      const movementsCount = monthInSeconds / fiveMinutesInSeconds;
+
+      const movements = [];
+      const baseBeesIn = 50;
+      const baseBeesOut = 45;
+      const baseAvgSpeed = 5.0;
+      const baseP95Speed = 12.0;
+      const baseStationaryBees = 3;
+
+      for (let i = 0; i < movementsCount; i++) {
+        const timestamp = now - (i * fiveMinutesInSeconds);
+
+        const beesInVariation = Math.floor((Math.random() - 0.5) * 40);
+        const beesOutVariation = Math.floor((Math.random() - 0.5) * 40);
+        const speedVariation = (Math.random() - 0.5) * 4;
+        const stationaryVariation = Math.floor((Math.random() - 0.5) * 4);
+
+        const beesIn = Math.max(0, Math.min(200, baseBeesIn + beesInVariation));
+        const beesOut = Math.max(0, Math.min(200, baseBeesOut + beesOutVariation));
+        const netFlow = beesIn - beesOut;
+        const avgSpeed = Math.max(1, Math.min(15, baseAvgSpeed + speedVariation));
+        const p95Speed = Math.max(avgSpeed, Math.min(30, baseP95Speed + speedVariation * 2));
+        const stationaryBees = Math.max(0, Math.min(10, baseStationaryBees + stationaryVariation));
+        const detectedBees = beesIn + beesOut;
+        const beeInteractions = Math.floor(Math.random() * 20);
+
+        movements.push({
+          hiveId,
+          boxId,
+          timestamp,
+          beesIn,
+          beesOut,
+          netFlow,
+          avgSpeed: Math.round(avgSpeed * 10) / 10,
+          p95Speed: Math.round(p95Speed * 10) / 10,
+          stationaryBees,
+          detectedBees,
+          beeInteractions
+        });
+      }
+
+      console.log(`Generated ${movements.length} movements`);
+
+      const batchSize = 1000;
+      const batches = [];
+      for (let i = 0; i < movements.length; i += batchSize) {
+        batches.push(movements.slice(i, i + batchSize));
+      }
+
+      console.log(`Sending ${batches.length} batches of up to ${batchSize} movements`);
+
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        console.log(`Sending batch ${i + 1}/${batches.length} with ${batch.length} movements`);
+
+        let response = await fetch(ENTRANCE_MOVEMENT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [TEST_AUTH_HEADER]: 'true'
+          },
+          body: JSON.stringify(batch)
+        });
+
+        const result = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(result.message).toBe('OK');
+      }
+
+      console.log(`Successfully sent all ${movements.length} movements in ${batches.length} batches`);
     });
   });
 });
