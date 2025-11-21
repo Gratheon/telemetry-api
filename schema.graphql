@@ -11,8 +11,15 @@ type Query {
 	temperatureCelsius(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	humidityPercent(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	weightKg(hiveId: ID!, timeRangeMin: Int): MetricListResult
+	weightKgAggregated(hiveId: ID!, days: Int!, aggregation: AggregationType): MetricListResult
 	entranceMovementToday(hiveId: ID!, boxId: ID!): BeeMovementInOutResult
 	entranceMovement(hiveId: ID!, boxId: ID, timeFrom: DateTime!, timeTo: DateTime!): EntranceMovementResult
+}
+
+enum AggregationType {
+	DAILY_AVG
+	DAILY_MAX
+	DAILY_MIN
 }
 
 type BeeMovementInOutResult {
