@@ -12,7 +12,7 @@ type Query {
 	humidityPercent(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	weightKg(hiveId: ID!, timeRangeMin: Int): MetricListResult
 	entranceMovementToday(hiveId: ID!, boxId: ID!): BeeMovementInOutResult
-	entranceMovement(hiveId: ID!, boxId: ID!, timeFrom: DateTime!, timeTo: DateTime!): EntranceMovementResult
+	entranceMovement(hiveId: ID!, boxId: ID, timeFrom: DateTime!, timeTo: DateTime!): EntranceMovementResult
 }
 
 type BeeMovementInOutResult {

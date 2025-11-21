@@ -120,13 +120,13 @@ export async function readAggregatedMetricsFromMySQLForToday(
 
 export async function readEntranceMovementFromMySQL(
     hiveId: string,
-    boxId: string,
+    boxId: string | null,
     timeFrom: Date,
     timeTo: Date
 ) {
     try {
-        const rows = await storage().query(
-            sql`SELECT
+        const query = boxId
+            ? sql`SELECT
                 id,
                 hive_id as hiveId,
                 box_id as boxId,
@@ -148,7 +148,29 @@ export async function readEntranceMovementFromMySQL(
                 AND time <= ${timeTo}
             ORDER BY
                 time ASC`
-        );
+            : sql`SELECT
+                id,
+                hive_id as hiveId,
+                box_id as boxId,
+                bees_out as beesOut,
+                bees_in as beesIn,
+                time,
+                net_flow as netFlow,
+                avg_speed_px_per_frame as avgSpeed,
+                p95_speed_px_per_frame as p95Speed,
+                stationary_bees_count as stationaryBees,
+                detected_bees as detectedBees,
+                bee_interactions as beeInteractions
+            FROM
+                entrance_observer
+            WHERE
+                hive_id = ${hiveId}
+                AND time >= ${timeFrom}
+                AND time <= ${timeTo}
+            ORDER BY
+                time ASC`;
+
+        const rows = await storage().query(query);
         return rows;
     } catch (error) {
         logger.error(`Error reading entrance movement from MySQL: ${error}`);
@@ -166,13 +188,14 @@ export async function writeEntranceMovementToMySQL(
     p95Speed: number | null,
     stationaryBees: number | null,
     detectedBees: number | null,
-    beeInteractions: number | null
+    beeInteractions: number | null,
+    timestamp: Date = new Date()
 ) {
     try {
         await storage().query(
             sql`INSERT INTO entrance_observer 
-            (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions) 
-            VALUES (${hiveId}, ${boxId}, ${beesOut}, ${beesIn}, ${netFlow}, ${avgSpeed}, ${p95Speed}, ${stationaryBees}, ${detectedBees}, ${beeInteractions})`
+            (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
+            VALUES (${hiveId}, ${boxId}, ${beesOut}, ${beesIn}, ${netFlow}, ${avgSpeed}, ${p95Speed}, ${stationaryBees}, ${detectedBees}, ${beeInteractions}, ${timestamp})`
         );
     } catch (error) {
         logger.error(`Error writing entrance movement to MySQL: ${error}`);

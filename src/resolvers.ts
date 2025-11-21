@@ -108,7 +108,7 @@ export const resolvers = {
             try{
                 return {
                     __typename: "EntranceMovementList",
-                    metrics: await readEntranceMovementFromMySQL(hiveId, boxId, timeFrom, timeTo)
+                    metrics: await readEntranceMovementFromMySQL(hiveId, boxId || null, timeFrom, timeTo)
                 };
             }
             catch(err) {

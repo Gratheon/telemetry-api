@@ -139,6 +139,55 @@ describe('POST /graphql', () => {
             expect(response.status).toBe(200);
             expect(result.data.temperatureCelsius.length).not.toEqual(0);
         });
-    })
+    });
+
+    describe('entranceMovement', () => {
+        it('should return entrance movement data', async () => {
+            const now = new Date()
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+            let response = await fetch(GRAPHQL_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [TEST_AUTH_HEADER]: 'true'
+                },
+                body: JSON.stringify({
+                    "query": `
+                    query entranceMovement($hiveId: ID!, $boxId: ID!, $timeFrom: DateTime!, $timeTo: DateTime!) {
+                        entranceMovement(hiveId: $hiveId, boxId: $boxId, timeFrom: $timeFrom, timeTo: $timeTo) {
+                            __typename
+                            ... on EntranceMovementList {
+                                metrics {
+                                    time
+                                    beesIn
+                                    beesOut
+                                    netFlow
+                                }
+                            }
+                            
+                            ... on TelemetryError {
+                                message
+                                code
+                            }
+                        }
+                    }`,
+                    "variables": {
+                        "hiveId": "10",
+                        "boxId": "41",
+                        "timeFrom": weekAgo.toISOString(),
+                        "timeTo": now.toISOString()
+                    }
+                })
+            });
+
+            const result = await response.json();
+            console.log('entranceMovement result:', JSON.stringify(result, null, 2));
+            expect(response.status).toBe(200);
+            expect(result.data.entranceMovement.__typename).toBe('EntranceMovementList');
+            expect(result.data.entranceMovement.metrics).toBeDefined();
+            expect(Array.isArray(result.data.entranceMovement.metrics)).toBe(true);
+        });
+    });
 
 });
