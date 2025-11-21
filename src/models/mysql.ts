@@ -202,3 +202,42 @@ export async function writeEntranceMovementToMySQL(
         throw error;
     }
 }
+
+export async function readAggregatedWeightMetricsFromMySQL(
+    hiveId: string,
+    days: number = 365,
+    aggregation: 'DAILY_AVG' | 'DAILY_MAX' | 'DAILY_MIN' = 'DAILY_AVG'
+) {
+    const rangeTime = new Date();
+    rangeTime.setDate(rangeTime.getDate() - days);
+
+    let aggregationFunc = 'AVG';
+    if (aggregation === 'DAILY_MAX') aggregationFunc = 'MAX';
+    if (aggregation === 'DAILY_MIN') aggregationFunc = 'MIN';
+
+    try {
+        const rows = await storage().query(
+            sql`SELECT 
+                DATE(time) as date,
+                ${sql.__dangerous__rawValue(aggregationFunc)}(weight_kg) as v
+            FROM 
+                beehive_metrics 
+            WHERE 
+                hive_id = ${hiveId} 
+                AND time >= ${rangeTime} 
+                AND weight_kg IS NOT NULL 
+            GROUP BY 
+                DATE(time)
+            ORDER BY 
+                date ASC`
+        );
+
+        return rows.map(row => ({
+            t: new Date(row.date),
+            v: row.v
+        }));
+    } catch (error) {
+        logger.error(`Error reading aggregated metrics from MySQL: ${error}`);
+        throw error;
+    }
+}

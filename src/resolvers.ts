@@ -7,7 +7,8 @@ import {addIoTMetrics} from "./controllers/iot-metrics";
 import {
     readMetricsFromMySQL,
     readAggregatedMetricsFromMySQLForToday,
-    readEntranceMovementFromMySQL
+    readEntranceMovementFromMySQL,
+    readAggregatedWeightMetricsFromMySQL
 } from "./models/mysql";
 
 function wrapGraphqlError(code, message) {
@@ -85,6 +86,19 @@ export const resolvers = {
 
             return wrapMetricsResponse(()=>{
                 return readMetricsFromMySQL(hiveId, timeRangeMin, "weightKg")
+            })
+        },
+        weightKgAggregated: async (_, {hiveId, days, aggregation}, ctx) => {
+            if (days <= 0) {
+                return wrapGraphqlError(errorCodes.invalidTimeRange, "Days must be positive");
+            }
+
+            if (days > 365) {
+                return wrapGraphqlError(errorCodes.invalidTimeRange, "Days cannot exceed 365");
+            }
+
+            return wrapMetricsResponse(()=>{
+                return readAggregatedWeightMetricsFromMySQL(hiveId, days, aggregation || 'DAILY_AVG')
             })
         },
         entranceMovementToday: async (_, {hiveId, boxId}, ctx) => {
