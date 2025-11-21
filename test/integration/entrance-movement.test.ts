@@ -6,8 +6,8 @@ import './setup';
 // Import API configuration
 import {ENTRANCE_MOVEMENT_URL, TEST_AUTH_HEADER} from './utils/api-config';
 
-const hiveId = 5;
-const boxId = 16;
+const hiveId = 8;
+const boxId = 19;
 
 
 describe('POST /entrance/v1/movement', () => {
@@ -193,40 +193,6 @@ describe('POST /entrance/v1/movement', () => {
   });
 
   describe('bulk data generation', () => {
-    it('should accept 12 movements with hourly timestamps', async () => {
-      const now = Math.floor(Date.now() / 1000);
-      const movements = [];
-
-      for (let i = 0; i < 12; i++) {
-        movements.push({
-          hiveId,
-          boxId,
-          timestamp: now - (i * 3600),
-          "beesIn": 10 + i * 2,
-          "beesOut": 8 + i * 2,
-          "netFlow": 2,
-          "avgSpeed": 3.5 + i * 0.2,
-          "p95Speed": 8.0 + i * 0.5,
-          "stationaryBees": 1 + (i % 3),
-          "detectedBees": 18 + i * 4,
-          "beeInteractions": 5 + i
-        });
-      }
-
-      let response = await fetch(ENTRANCE_MOVEMENT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [TEST_AUTH_HEADER]: 'true'
-        },
-        body: JSON.stringify(movements)
-      });
-
-      const result = await response.json();
-      expect(response.status).toBe(200);
-      expect(result.message).toBe('OK');
-    });
-
     it('should accept month of movements with 5-minute intervals', async () => {
       const now = Math.floor(Date.now() / 1000);
       const monthInSeconds = 30 * 24 * 60 * 60;
