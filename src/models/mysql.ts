@@ -241,3 +241,64 @@ export async function readAggregatedWeightMetricsFromMySQL(
         throw error;
     }
 }
+
+export async function readPopulationMetricsFromMySQL(
+    hiveId: string,
+    days: number = 90
+) {
+    const rangeTime = new Date();
+    rangeTime.setDate(rangeTime.getDate() - days);
+
+    try {
+        const rows = await storage().query(
+            sql`SELECT 
+                time as t,
+                bee_count as beeCount,
+                drone_count as droneCount,
+                varroa_mite_count as varroaMiteCount,
+                inspection_id as inspectionId
+            FROM 
+                population_metrics 
+            WHERE 
+                hive_id = ${hiveId} 
+                AND time >= ${rangeTime}
+            ORDER BY 
+                time ASC`
+        );
+
+        return rows;
+    } catch (error) {
+        logger.error(`Error reading population metrics from MySQL: ${error}`);
+        throw error;
+    }
+}
+
+export async function writePopulationMetricsToMySQL(
+    hiveId: string,
+    fields: {
+        beeCount?: number;
+        droneCount?: number;
+        varroaMiteCount?: number;
+    },
+    inspectionId?: string,
+    timestamp: Date = new Date()
+) {
+    try {
+        await storage().query(
+            sql`INSERT INTO population_metrics 
+            (hive_id, bee_count, drone_count, varroa_mite_count, inspection_id, time) 
+            VALUES (
+                ${hiveId},
+                ${fields.beeCount !== undefined ? fields.beeCount : null},
+                ${fields.droneCount !== undefined ? fields.droneCount : null},
+                ${fields.varroaMiteCount !== undefined ? fields.varroaMiteCount : null},
+                ${inspectionId || null},
+                ${timestamp}
+            )`
+        );
+    } catch (error) {
+        logger.error(`Error writing population metrics to MySQL: ${error}`);
+        throw error;
+    }
+}
+

@@ -16,6 +16,7 @@ export const errorCodes = {
     boxIdMissing: 4004,
 
     positiveValuesOnly: 4005,
+    invalidInput: 4006,
 
     internalServerError: 5000,
 }

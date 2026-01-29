@@ -14,6 +14,7 @@ type Query {
 	weightKgAggregated(hiveId: ID!, days: Int!, aggregation: AggregationType): MetricListResult
 	entranceMovementToday(hiveId: ID!, boxId: ID!): BeeMovementInOutResult
 	entranceMovement(hiveId: ID!, boxId: ID, timeFrom: DateTime!, timeTo: DateTime!): EntranceMovementResult
+	populationMetrics(hiveId: ID!, days: Int): PopulationMetricsResult
 }
 
 enum AggregationType {
@@ -68,10 +69,39 @@ type MetricFloatList {
 }
 union MetricListResult = MetricFloatList | TelemetryError
 
+type PopulationMetric {
+	"""Timestamp of the metric"""
+	t: DateTime!
+
+	"""Bee count"""
+	beeCount: Int
+
+	"""Drone count"""
+	droneCount: Int
+
+	"""Varroa mite count"""
+	varroaMiteCount: Int
+
+	"""Inspection ID if available"""
+	inspectionId: String
+}
+
+type PopulationMetricsList {
+	metrics: [PopulationMetric]
+}
+
+union PopulationMetricsResult = PopulationMetricsList | TelemetryError
+
 type Mutation {
 	addMetric(
 		hiveId: ID!
 		fields: MetricSetInput!
+	): AddMetricResult
+
+	addPopulationMetric(
+		hiveId: ID!
+		fields: PopulationMetricInput!
+		inspectionId: String
 	): AddMetricResult
 }
 
@@ -86,3 +116,10 @@ input MetricSetInput {
 	humidityPercent: Float
 	weightKg: Float
 }
+
+input PopulationMetricInput {
+	beeCount: Int
+	droneCount: Int
+	varroaMiteCount: Int
+}
+

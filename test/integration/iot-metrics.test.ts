@@ -7,9 +7,9 @@ import './setup';
 import { IOT_METRICS_URL, TEST_AUTH_HEADER } from './utils/api-config';
 
 // Special test token that will be accepted without validation
-const TEST_TOKEN = 'test-api-token';
+const TEST_TOKEN = '2170f5ab-bd83-4982-a342-89b80160e1bf';
 const INVALID_TOKEN = 'invalid-test-token';
-const hiveId = 5;
+const hiveId = 196;
 
 describe('POST /iot/v1/metrics', () => {
     describe('validation errors', () => {

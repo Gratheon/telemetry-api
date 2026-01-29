@@ -8,7 +8,9 @@ import {
     readMetricsFromMySQL,
     readAggregatedMetricsFromMySQLForToday,
     readEntranceMovementFromMySQL,
-    readAggregatedWeightMetricsFromMySQL
+    readAggregatedWeightMetricsFromMySQL,
+    readPopulationMetricsFromMySQL,
+    writePopulationMetricsToMySQL
 } from "./models/mysql";
 
 function wrapGraphqlError(code, message) {
@@ -134,6 +136,32 @@ export const resolvers = {
                     return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
                 }
             }
+        },
+        populationMetrics: async (_, {hiveId, days}, ctx) => {
+            const daysToQuery = days || 90;
+
+            if (daysToQuery <= 0) {
+                return wrapGraphqlError(errorCodes.invalidTimeRange, "Days must be positive");
+            }
+
+            if (daysToQuery > 730) {
+                return wrapGraphqlError(errorCodes.invalidTimeRange, "Days cannot exceed 730");
+            }
+
+            try {
+                return {
+                    __typename: "PopulationMetricsList",
+                    metrics: await readPopulationMetricsFromMySQL(hiveId, daysToQuery)
+                };
+            } catch(err) {
+                logger.errorEnriched('Error reading population metrics from MySQL', err);
+
+                if (err instanceof TelemetryServerError) {
+                    return wrapGraphqlError(err.errorCode, err.message);
+                } else {
+                    return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
+                }
+            }
         }
     },
     Mutation: {
@@ -153,6 +181,30 @@ export const resolvers = {
                 } else {
                     return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
 
+                }
+            }
+
+            return {
+                __typename: "AddMetricMessage",
+                message: 'OK'
+            };
+        },
+        addPopulationMetric: async (_, {hiveId, fields, inspectionId}, ctx) => {
+            logger.info(`Mutation.addPopulationMetric called: ${ctx.uid}`);
+
+            if (!fields || Object.keys(fields).length === 0) {
+                return wrapGraphqlError(errorCodes.invalidInput, "Fields are required");
+            }
+
+            try {
+                await writePopulationMetricsToMySQL(hiveId, fields, inspectionId);
+            } catch (err) {
+                logger.errorEnriched('Error writing population metrics to MySQL', err);
+
+                if (err instanceof TelemetryServerError) {
+                    return wrapGraphqlError(err.errorCode, err.message);
+                } else {
+                    return wrapGraphqlError(errorCodes.internalServerError, "Internal server error");
                 }
             }
 

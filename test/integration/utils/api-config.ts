@@ -19,3 +19,17 @@ export const ENTRANCE_MOVEMENT_URL = `${API_BASE_URL}/entrance/v1/movement`;
 export const HEALTH_URL = `${API_BASE_URL}/health`;
 export const IOT_METRICS_URL = `${API_BASE_URL}/iot/v1/metrics`;
 export const GRAPHQL_URL = `${API_BASE_URL}/graphql`;
+
+export async function graphQLRequest(query: string, variables: any = {}) {
+    const response = await fetch(GRAPHQL_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [TEST_AUTH_HEADER]: 'true'
+        },
+        body: JSON.stringify({ query, variables })
+    });
+
+    return await response.json();
+}
+
