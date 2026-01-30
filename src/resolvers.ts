@@ -189,7 +189,7 @@ export const resolvers = {
                 message: 'OK'
             };
         },
-        addPopulationMetric: async (_, {hiveId, fields, inspectionId}, ctx) => {
+        addPopulationMetric: async (_, {hiveId, fields, inspectionId, timestamp}, ctx) => {
             logger.info(`Mutation.addPopulationMetric called: ${ctx.uid}`);
 
             if (!fields || Object.keys(fields).length === 0) {
@@ -197,7 +197,8 @@ export const resolvers = {
             }
 
             try {
-                await writePopulationMetricsToMySQL(hiveId, fields, inspectionId);
+                const date = timestamp ? new Date(timestamp) : undefined;
+                await writePopulationMetricsToMySQL(hiveId, fields, inspectionId, date);
             } catch (err) {
                 logger.errorEnriched('Error writing population metrics to MySQL', err);
 

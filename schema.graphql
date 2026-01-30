@@ -102,6 +102,7 @@ type Mutation {
 		hiveId: ID!
 		fields: PopulationMetricInput!
 		inspectionId: String
+		timestamp: DateTime
 	): AddMetricResult
 }
 
