@@ -6,8 +6,8 @@ import './setup';
 // Import API configuration
 import { IOT_METRICS_URL, TEST_AUTH_HEADER } from './utils/api-config';
 
-// Special test token that will be accepted without validation
-const TEST_TOKEN = '2170f5ab-bd83-4982-a342-89b80160e1bf';
+// Test tokens - must match src/middleware/auth.ts TEST_TOKEN
+const TEST_TOKEN = 'test-api-token';
 const INVALID_TOKEN = 'invalid-test-token';
 const hiveId = 196;
 
