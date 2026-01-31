@@ -74,6 +74,42 @@ export async function writeBeehiveMetricsToMySQL(
     }
 }
 
+export async function writeBatchBeehiveMetricsToMySQL(
+    metrics: Array<{
+        hiveId: string;
+        fields: {
+            temperatureCelsius?: number;
+            humidityPercent?: number;
+            weightKg?: number;
+        };
+        timestamp: Date;
+    }>
+) {
+    if (metrics.length === 0) return;
+
+    try {
+        // Build batch insert query
+        const values = metrics.map(metric => 
+            sql`(
+                ${metric.hiveId},
+                ${metric.fields.temperatureCelsius !== undefined ? metric.fields.temperatureCelsius : null},
+                ${metric.fields.humidityPercent !== undefined ? metric.fields.humidityPercent : null},
+                ${metric.fields.weightKg !== undefined ? metric.fields.weightKg : null},
+                ${metric.timestamp}
+            )`
+        );
+
+        await storage().query(
+            sql`INSERT INTO beehive_metrics 
+            (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
+            VALUES ${sql.join(values, sql`, `)}`
+        );
+    } catch (error) {
+        logger.error(`Error writing batch beehive metrics to MySQL: ${error}`);
+        throw error;
+    }
+}
+
 // movement metrics
 export async function readAggregatedMetricsFromMySQLForToday(
     hiveId: string,
@@ -199,6 +235,51 @@ export async function writeEntranceMovementToMySQL(
         );
     } catch (error) {
         logger.error(`Error writing entrance movement to MySQL: ${error}`);
+        throw error;
+    }
+}
+
+export async function writeBatchEntranceMovementToMySQL(
+    movements: Array<{
+        hiveId: string;
+        boxId: string;
+        beesOut: number | null;
+        beesIn: number | null;
+        netFlow: number | null;
+        avgSpeed: number | null;
+        p95Speed: number | null;
+        stationaryBees: number | null;
+        detectedBees: number | null;
+        beeInteractions: number | null;
+        timestamp: Date;
+    }>
+) {
+    if (movements.length === 0) return;
+
+    try {
+        const values = movements.map(movement =>
+            sql`(
+                ${movement.hiveId},
+                ${movement.boxId},
+                ${movement.beesOut},
+                ${movement.beesIn},
+                ${movement.netFlow},
+                ${movement.avgSpeed},
+                ${movement.p95Speed},
+                ${movement.stationaryBees},
+                ${movement.detectedBees},
+                ${movement.beeInteractions},
+                ${movement.timestamp}
+            )`
+        );
+
+        await storage().query(
+            sql`INSERT INTO entrance_observer 
+            (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
+            VALUES ${sql.join(values, sql`, `)}`
+        );
+    } catch (error) {
+        logger.error(`Error writing batch entrance movement to MySQL: ${error}`);
         throw error;
     }
 }

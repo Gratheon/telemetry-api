@@ -1,4 +1,4 @@
-import {writeEntranceMovementToMySQL} from "../models/mysql";
+import {writeEntranceMovementToMySQL, writeBatchEntranceMovementToMySQL} from "../models/mysql";
 import {errorCodes, TelemetryServerError} from "../error";
 
 export async function addEntranceMovement(input) {
@@ -8,7 +8,8 @@ export async function addEntranceMovement(input) {
         throw new TelemetryServerError("Bad Request: no movements provided", errorCodes.fieldsMissing, 400);
     }
 
-    for (const movement of movements) {
+    // Validate all movements first
+    const validatedMovements = movements.map(movement => {
         if (!movement.hiveId) {
             throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
         }
@@ -26,6 +27,27 @@ export async function addEntranceMovement(input) {
 
         const timestamp = movement.timestamp ? new Date(movement.timestamp * 1000) : new Date();
 
+        return {
+            hiveId: movement.hiveId,
+            boxId: movement.boxId,
+            beesOut: movement.beesOut,
+            beesIn: movement.beesIn,
+            netFlow: movement.netFlow,
+            avgSpeed: movement.avgSpeed,
+            p95Speed: movement.p95Speed,
+            stationaryBees: movement.stationaryBees,
+            detectedBees: movement.detectedBees,
+            beeInteractions: movement.beeInteractions,
+            timestamp
+        };
+    });
+
+    // Use batch insert for multiple movements
+    if (validatedMovements.length > 1) {
+        await writeBatchEntranceMovementToMySQL(validatedMovements);
+    } else {
+        // Use single insert for one movement
+        const movement = validatedMovements[0];
         await writeEntranceMovementToMySQL(
             movement.hiveId,
             movement.boxId,
@@ -37,7 +59,7 @@ export async function addEntranceMovement(input) {
             movement.stationaryBees,
             movement.detectedBees,
             movement.beeInteractions,
-            timestamp
+            movement.timestamp
         );
     }
 }

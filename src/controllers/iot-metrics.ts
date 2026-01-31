@@ -1,4 +1,4 @@
-import {writeBeehiveMetricsToMySQL} from "../models/mysql";
+import {writeBeehiveMetricsToMySQL, writeBatchBeehiveMetricsToMySQL} from "../models/mysql";
 import {errorCodes, TelemetryServerError} from "../error";
 
 export async function addIoTMetrics(input) {
@@ -8,7 +8,8 @@ export async function addIoTMetrics(input) {
         throw new TelemetryServerError("Bad Request: no metrics provided", errorCodes.fieldsMissing, 400);
     }
 
-    for (const metric of metrics) {
+    // Validate all metrics first
+    const validatedMetrics = metrics.map(metric => {
         if (!metric.hiveId) {
             throw new TelemetryServerError("Bad Request: hiveId not provided", errorCodes.hiveIdMissing, 400);
         }
@@ -19,6 +20,19 @@ export async function addIoTMetrics(input) {
 
         const timestamp = metric.timestamp ? new Date(metric.timestamp * 1000) : new Date();
 
-        await writeBeehiveMetricsToMySQL(metric.hiveId, metric.fields, timestamp);
+        return {
+            hiveId: metric.hiveId,
+            fields: metric.fields,
+            timestamp
+        };
+    });
+
+    // Use batch insert for multiple metrics
+    if (validatedMetrics.length > 1) {
+        await writeBatchBeehiveMetricsToMySQL(validatedMetrics);
+    } else {
+        // Use single insert for one metric
+        const metric = validatedMetrics[0];
+        await writeBeehiveMetricsToMySQL(metric.hiveId, metric.fields, metric.timestamp);
     }
 }
