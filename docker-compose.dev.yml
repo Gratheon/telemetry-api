@@ -1,15 +1,27 @@
+version: '3'
+
 services:
   telemetry-api:
     build:
+      context: .
       dockerfile: Dockerfile
-    command:
-      ./node_modules/.bin/tsc-watch --project ./src/config/tsconfig.json --onSuccess "node /app/app/telemetry-api.js"
+    command: sh -c "npm ci && npm run build && node /app/app/telemetry-api.js"
     environment:
       - PORT=8600
       - ENV_ID=dev
+      - NODE_ENV=development
+      # MySQL connection settings (using external mysql container)
+      - MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=5100
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - MYSQL_DATABASE=telemetry-api
     tty: true
     ports:
       - 8600:8600
     volumes:
       - .:/app/
+      - /app/node_modules
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

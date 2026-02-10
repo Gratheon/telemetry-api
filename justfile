@@ -1,3 +1,5 @@
+set shell := ["/bin/zsh", "-c"]
+
 start:
 	rm -rf ./app || true
 	source ~/.nvm/nvm.sh && nvm use && npm i && npm run build
