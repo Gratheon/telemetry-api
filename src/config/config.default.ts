@@ -11,6 +11,9 @@ const config = {
 		user: 'test',
 		password: 'test',
 		database: 'telemetry-api',
+		// Root credentials for database creation (optional)
+		rootUser: 'root',
+		rootPassword: 'test',
   }
 };
 

@@ -12,10 +12,43 @@ export function storage() {
 
 export async function initStorage(logger) {
   const dsn = `mysql://${config.mysql.user}:${config.mysql.password}@${config.mysql.host}:${config.mysql.port}/`
-  const conn = createConnectionPool(dsn);
 
-  await conn.query(sql`CREATE DATABASE IF NOT EXISTS ${sql.ident(config.mysql.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`);
-  
+  // Try to create database using root credentials if available
+  // This handles cases where the regular user doesn't have CREATE DATABASE privileges
+  const rootUser = config.mysql.rootUser;
+  const rootPassword = config.mysql.rootPassword;
+
+  if (rootUser && rootPassword) {
+    const rootDsn = `mysql://${rootUser}:${rootPassword}@${config.mysql.host}:${config.mysql.port}/`;
+    const rootConn = createConnectionPool(rootDsn);
+
+    try {
+      await rootConn.query(sql`CREATE DATABASE IF NOT EXISTS ${sql.ident(config.mysql.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`);
+      logger.info(`Database '${config.mysql.database}' created or already exists`);
+
+      // Grant all privileges on the database to the regular user
+      await rootConn.query(sql`GRANT ALL PRIVILEGES ON ${sql.ident(config.mysql.database)}.* TO ${sql.ident(config.mysql.user)}@'%'`);
+      await rootConn.query(sql`FLUSH PRIVILEGES`);
+      logger.info(`Granted all privileges on '${config.mysql.database}' to '${config.mysql.user}'`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.warn(`Could not create database with root user: ${errorMessage}. Will try with regular user.`);
+    }
+
+    await rootConn.dispose();
+  }
+
+  // Also try with regular user (for backward compatibility)
+  const conn = createConnectionPool(dsn);
+  try {
+    await conn.query(sql`CREATE DATABASE IF NOT EXISTS ${sql.ident(config.mysql.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`);
+    logger.info(`Database '${config.mysql.database}' created or already exists (regular user)`);
+  } catch (err) {
+    // Log but don't fail - database might already exist or be created by init script
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    logger.warn(`Could not create database '${config.mysql.database}' with regular user: ${errorMessage}. Assuming it already exists.`);
+  }
+
   // Dispose of the temporary connection pool to prevent connection leaks
   await conn.dispose();
   
