@@ -26,7 +26,8 @@ services:
       - .:/app/
       - /app/node_modules
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.0
@@ -41,10 +42,11 @@ services:
     volumes:
       - mysql-test-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "test", "-ptest"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
 
 volumes:
   mysql-test-data:

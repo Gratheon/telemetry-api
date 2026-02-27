@@ -50,7 +50,7 @@ jobs:
           -v $(pwd):/app \
           -w /app \
           -e CI=true \
-          node:20-alpine \
+          node:25-alpine \
           sh -c "npm ci && npm test"
     
     - name: Save test logs
