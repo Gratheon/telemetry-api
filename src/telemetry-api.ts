@@ -10,7 +10,7 @@ import config from './config/index';
 import { schema } from './schema';
 import { resolvers } from './resolvers';
 import { registerSchema } from "./schema-registry";
-import { logger } from './logger'
+import { fastifyLogger, logger } from './logger'
 import { registerRestAPI } from "./restAPI";
 import { ApolloServerPluginInlineTraceDisabled } from "apollo-server-core";
 import { initStorage } from "./storage";
@@ -67,7 +67,7 @@ async function startApolloServer(app, typeDefs, resolvers) {
 
 (async function main() {
 	// @ts-ignore
-	const app = fastify({ logger });
+	const app = fastify({ logger: fastifyLogger });
 
 	app.setErrorHandler(async (error, request, reply) => {
 		// Logging locally

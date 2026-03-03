@@ -5,6 +5,7 @@
   "dependencies": {
     "@apollo/federation": "0.38.1",
     "@databases/mysql": "7.0.0",
+    "@gratheon/log-lib": "^2.2.7",
     "@sentry/integrations": "7.120.4",
     "@sentry/node": "7.120.4",
     "apollo-server-core": "3.13.0",
