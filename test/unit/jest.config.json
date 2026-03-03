@@ -1,0 +1,27 @@
+{
+  "rootDir": "../../",
+  "resetMocks": true,
+  "restoreMocks": true,
+  "maxWorkers": 1,
+  "transform": {
+    "^.+\\.(ts)$": [
+      "ts-jest",
+      {
+        "tsconfig": "<rootDir>/test/tsconfig.test.json"
+      }
+    ]
+  },
+  "testMatch": [
+    "<rootDir>/test/unit/**/*.test.(ts|js)"
+  ],
+  "testTimeout": 30000,
+  "collectCoverage": true,
+  "coverageDirectory": "<rootDir>/test-results/unit-coverage",
+  "collectCoverageFrom": [
+    "src/controllers/**/*.ts",
+    "src/middleware/**/*.ts",
+    "src/resolvers.ts",
+    "src/error.ts",
+    "!src/logger/**"
+  ]
+}
