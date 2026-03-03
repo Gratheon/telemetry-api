@@ -6,7 +6,7 @@ import { HEALTH_URL } from './utils/api-config';
  * This will poll the server's health endpoint until it responds with a 200 status code
  * or until the timeout is reached
  */
-async function waitForServerToBeReady(timeoutSeconds = 60) {
+async function waitForServerToBeReady(timeoutSeconds = 180) {
   console.log(`Waiting for server to be ready at ${HEALTH_URL}...`);
   
   for (let i = 0; i < timeoutSeconds; i++) {

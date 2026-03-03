@@ -7,3 +7,5 @@ migrations/004-add-user.sql
 app
 influxdb
 .DS_Store
+coverage/
+test-results/

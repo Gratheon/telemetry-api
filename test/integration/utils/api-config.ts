@@ -5,9 +5,9 @@
  * between localhost (for local development) and the Docker service name (for CI/CD)
  */
 
-// Use Docker service name in CI environment, localhost otherwise
-// This allows tests to run both locally and in CI
-export const API_HOST = process.env.CI ? 'telemetry-api' : 'localhost';
+// Host can be overridden explicitly for CI/containerized runs.
+// Defaults to localhost for local and CI-hosted test execution.
+export const API_HOST = process.env.API_HOST || 'localhost';
 export const API_PORT = 8600;
 export const API_BASE_URL = `http://${API_HOST}:${API_PORT}`;
 
@@ -32,4 +32,3 @@ export async function graphQLRequest(query: string, variables: any = {}) {
 
     return await response.json();
 }
-

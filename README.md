@@ -118,12 +118,18 @@ See [migrations/](migrations/) for full schema definitions.
 
 ## Testing
 
-This project uses Jest for integration testing.
+This project uses Jest with separate unit and integration test suites.
 
 ### Running Tests
 
 ```bash
-# Run tests locally (requires running MySQL instance)
+# Run unit tests
+npm run test:unit
+
+# Run integration tests locally (requires running MySQL instance)
+npm run test:integration
+
+# Run all tests (unit + integration)
 npm test
 
 # Run tests in Docker (includes all dependencies)
@@ -138,7 +144,13 @@ npm run test:docker:stop
 
 ### Test Coverage
 
-Tests are located in `test/integration/` and cover:
+Unit tests are located in `test/unit/` and cover:
+- **REST controllers** (`controllers/*.test.ts`) - request validation and batch/single write flow
+- **Auth middleware** (`middleware/auth.test.ts`) - header parsing and token validation behavior
+- **GraphQL resolvers** (`resolvers.test.ts`) - validation branches and error/result wrapping
+- **Error model** (`error.test.ts`) - custom error properties
+
+Integration tests are located in `test/integration/` and cover:
 - **GraphQL API** (`graphql.test.ts`) - Query/mutation validation and error handling
 - **REST API** (`iot-metrics.test.ts`) - Input validation, authentication, batch operations
 - **Entrance Movement** (`entrance-movement.test.ts`) - Bee traffic metrics
