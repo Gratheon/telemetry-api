@@ -1,10 +1,12 @@
-import { ApolloServer } from "apollo-server-fastify";
-import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerPluginInlineTraceDisabled } from "@apollo/server/plugin/disabled";
+import fastifyApollo, { fastifyApolloDrainPlugin } from "@as-integrations/fastify";
 import fastify from "fastify";
-import { buildSubgraphSchema } from '@apollo/federation';
+import { buildSubgraphSchema } from "@apollo/subgraph";
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from "@sentry/integrations";
-import gql from "graphql-tag";
+import { parse } from "graphql";
 
 import config from './config/index';
 import { schema } from './schema';
@@ -12,10 +14,8 @@ import { resolvers } from './resolvers';
 import { registerSchema } from "./schema-registry";
 import { fastifyLogger, logger } from './logger'
 import { registerRestAPI } from "./restAPI";
-import { ApolloServerPluginInlineTraceDisabled } from "apollo-server-core";
 import { initStorage } from "./storage";
 
-// Add root handler import
 import { rootHandler } from "./handlers/rootHandler";
 
 Sentry.init({
@@ -31,43 +31,28 @@ Sentry.init({
 });
 
 
-function fastifyAppClosePlugin(app) {
-	return {
-		async serverWillStart() {
-			return {
-				async drainServer() {
-					await app.close();
-				}
-			};
-		}
-	};
-}
-
 async function startApolloServer(app, typeDefs, resolvers) {
 	const server = new ApolloServer({
-		schema: buildSubgraphSchema({ typeDefs: gql(typeDefs), resolvers }),
+		schema: buildSubgraphSchema({ typeDefs: parse(typeDefs), resolvers }),
 		plugins: [
-			fastifyAppClosePlugin(app),
-			ApolloServerPluginLandingPageGraphQLPlayground(),
-			ApolloServerPluginDrainHttpServer({ httpServer: app.server }),
+			fastifyApolloDrainPlugin(app),
+			ApolloServerPluginLandingPageLocalDefault(),
 			ApolloServerPluginInlineTraceDisabled()
 		],
-		context: (req) => {
-			return {
-				uid: req.request.raw.headers['internal-userid']
-			};
-		},
 	});
 
 	await server.start();
-	app.register(server.createHandler());
-
-	return server.graphqlPath;
+	await app.register(fastifyApollo(server), {
+		context: async (request) => {
+			return {
+				uid: request.headers["internal-userid"],
+			};
+		},
+	});
 }
 
 (async function main() {
-	// @ts-ignore
-	const app = fastify({ logger: fastifyLogger });
+	const app = fastify({ loggerInstance: fastifyLogger });
 
 	app.setErrorHandler(async (error, request, reply) => {
 		// Logging locally
@@ -78,8 +63,7 @@ async function startApolloServer(app, typeDefs, resolvers) {
 				//@ts-ignore
 				return Sentry.addRequestDataToEvent(event, request);
 			});
-			//@ts-ignore
-			Sentry.captureException(err);
+			Sentry.captureException(error);
 		});
 
 		reply.status(500).send({ error: "Something went wrong" });
@@ -100,8 +84,8 @@ async function startApolloServer(app, typeDefs, resolvers) {
 
 		registerRestAPI(app);
 
-		const port = process.env.PORT || 5000;
-		await app.listen(port, '0.0.0.0');
+		const port = Number(process.env.PORT) || 5000;
+		await app.listen({ port, host: "0.0.0.0" });
 		
 		logger.info(`📊 telemetry-api service is ready`);
 		logger.info(`To report metrics over API use POST http://localhost:${port}/metric`);
