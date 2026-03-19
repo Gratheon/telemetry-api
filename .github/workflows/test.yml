@@ -34,6 +34,15 @@ jobs:
     - name: Run unit tests
       run: npm run test:unit
 
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./test-results/unit-coverage/lcov.info
+        flags: unit
+        fail_ci_if_error: true
+        verbose: true
+
   integration-tests:
     runs-on: ubuntu-latest
 

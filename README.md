@@ -1,4 +1,6 @@
 # gratheon / telemetry-api 📊
+[![codecov](https://codecov.io/gh/Gratheon/telemetry-api/graph/badge.svg?token=YP2U3DZE0E)](https://codecov.io/gh/Gratheon/telemetry-api)
+
 Backend service responsible for logging metrics into timeseries database (influx).
 Expected to run in the cloud and receive IoT data from beehives.
 
