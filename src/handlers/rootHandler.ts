@@ -2,6 +2,7 @@
 const endpoints = [
     { method: 'GET', path: '/', description: 'This documentation page' },
     { method: 'GET', path: '/health', description: 'Health check endpoint' },
+    { method: 'GET', path: '/metrics', description: 'Prometheus metrics endpoint' },
     { method: 'GET', path: '/graphql', description: 'GraphQL playground' },
     { method: 'POST', path: '/graphql', description: 'GraphQL API endpoint' },
     { method: 'POST', path: '/metric', description: 'Submit metrics via REST API' },
