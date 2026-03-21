@@ -1,7 +1,37 @@
 import { sql } from "@databases/mysql";
 import { logger } from "../logger";
+import { recordDbQuery } from "../metrics";
 
 import { storage } from "../storage";
+
+async function runMySqlQuery<T>(queryName: string, query: any): Promise<T> {
+    const start = process.hrtime.bigint();
+
+    try {
+        const result = await storage().query(query);
+        const elapsedNanoseconds = Number(process.hrtime.bigint() - start);
+        const durationSeconds = elapsedNanoseconds / 1_000_000_000;
+
+        recordDbQuery({
+            queryName,
+            status: "success",
+            durationSeconds,
+        });
+
+        return result as T;
+    } catch (error) {
+        const elapsedNanoseconds = Number(process.hrtime.bigint() - start);
+        const durationSeconds = elapsedNanoseconds / 1_000_000_000;
+
+        recordDbQuery({
+            queryName,
+            status: "error",
+            durationSeconds,
+        });
+
+        throw error;
+    }
+}
 
 // iot sensors metrics
 export async function readMetricsFromMySQL(
@@ -26,7 +56,8 @@ export async function readMetricsFromMySQL(
     rangeTime.setMinutes(rangeTime.getMinutes() - rangeMin);
 
     try {
-        const rows = await storage().query(
+        const rows = await runMySqlQuery<any[]>(
+            "read_metrics",
             sql`SELECT 
                 time as t, 
                 ${sql.ident(mysqlField)} as v 
@@ -57,7 +88,8 @@ export async function writeBeehiveMetricsToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await storage().query(
+        await runMySqlQuery<void>(
+            "write_beehive_metrics",
             sql`INSERT INTO beehive_metrics 
             (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
             VALUES (
@@ -99,7 +131,8 @@ export async function writeBatchBeehiveMetricsToMySQL(
             )`
         );
 
-        await storage().query(
+        await runMySqlQuery<void>(
+            "write_batch_beehive_metrics",
             sql`INSERT INTO beehive_metrics 
             (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
             VALUES ${sql.join(values, sql`, `)}`
@@ -126,7 +159,8 @@ export async function readAggregatedMetricsFromMySQLForToday(
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         // Build the query
-        const rows = await storage().query(
+        const rows = await runMySqlQuery<any[]>(
+            "read_aggregated_metrics_today",
             sql`SELECT 
                 SUM(bees_in) as beesIn,
                 SUM(bees_out) as beesOut,
@@ -206,7 +240,7 @@ export async function readEntranceMovementFromMySQL(
             ORDER BY
                 time ASC`;
 
-        const rows = await storage().query(query);
+        const rows = await runMySqlQuery<any[]>("read_entrance_movement", query);
         return rows;
     } catch (error) {
         logger.error(`Error reading entrance movement from MySQL: ${error}`);
@@ -228,7 +262,8 @@ export async function writeEntranceMovementToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await storage().query(
+        await runMySqlQuery<void>(
+            "write_entrance_movement",
             sql`INSERT INTO entrance_observer 
             (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
             VALUES (${hiveId}, ${boxId}, ${beesOut}, ${beesIn}, ${netFlow}, ${avgSpeed}, ${p95Speed}, ${stationaryBees}, ${detectedBees}, ${beeInteractions}, ${timestamp})`
@@ -273,7 +308,8 @@ export async function writeBatchEntranceMovementToMySQL(
             )`
         );
 
-        await storage().query(
+        await runMySqlQuery<void>(
+            "write_batch_entrance_movement",
             sql`INSERT INTO entrance_observer 
             (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
             VALUES ${sql.join(values, sql`, `)}`
@@ -297,7 +333,8 @@ export async function readAggregatedWeightMetricsFromMySQL(
     if (aggregation === 'DAILY_MIN') aggregationFunc = 'MIN';
 
     try {
-        const rows = await storage().query(
+        const rows = await runMySqlQuery<any[]>(
+            "read_aggregated_weight_metrics",
             sql`SELECT 
                 DATE(time) as date,
                 ${sql.__dangerous__rawValue(aggregationFunc)}(weight_kg) as v
@@ -331,7 +368,8 @@ export async function readPopulationMetricsFromMySQL(
     rangeTime.setDate(rangeTime.getDate() - days);
 
     try {
-        const rows = await storage().query(
+        const rows = await runMySqlQuery<any[]>(
+            "read_population_metrics",
             sql`SELECT 
                 time as t,
                 bee_count as beeCount,
@@ -365,7 +403,8 @@ export async function writePopulationMetricsToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await storage().query(
+        await runMySqlQuery<void>(
+            "write_population_metrics",
             sql`INSERT INTO population_metrics 
             (hive_id, bee_count, drone_count, varroa_mite_count, inspection_id, time) 
             VALUES (
@@ -382,4 +421,3 @@ export async function writePopulationMetricsToMySQL(
         throw error;
     }
 }
-

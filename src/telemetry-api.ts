@@ -15,8 +15,11 @@ import { registerSchema } from "./schema-registry";
 import { fastifyLogger, logger } from './logger'
 import { registerRestAPI } from "./restAPI";
 import { initStorage } from "./storage";
+import { metricsContentType, recordHttpRequest, renderMetrics, wrapGraphqlResolversWithMetrics } from "./metrics";
 
 import { rootHandler } from "./handlers/rootHandler";
+
+const requestStartTimes = new WeakMap<object, bigint>();
 
 Sentry.init({
 	dsn: config.sentryDsn,
@@ -75,12 +78,41 @@ async function startApolloServer(app, typeDefs, resolvers) {
 		reply.send({ hello: 'world' })
 	})
 
+	app.addHook("onRequest", async (request) => {
+		requestStartTimes.set(request.raw, process.hrtime.bigint());
+	});
+
+	app.addHook("onResponse", async (request, reply) => {
+		const start = requestStartTimes.get(request.raw);
+		if (!start) {
+			return;
+		}
+
+		requestStartTimes.delete(request.raw);
+		const elapsedNanoseconds = Number(process.hrtime.bigint() - start);
+		const durationSeconds = elapsedNanoseconds / 1_000_000_000;
+		const route = request.routeOptions.url || request.raw.url?.split("?")[0] || "unknown";
+
+		recordHttpRequest({
+			method: request.method,
+			route,
+			statusCode: reply.statusCode,
+			durationSeconds,
+		});
+	});
+
+	app.get("/metrics", async (request, reply) => {
+		reply.type(metricsContentType);
+		return renderMetrics();
+	});
+
 	try {		
 		await initStorage(logger);
 		
 		await registerSchema(schema);
 		logger.info('starting telemetry-api apollo server');
-		await startApolloServer(app, schema, resolvers);
+		const wrappedResolvers = wrapGraphqlResolversWithMetrics(resolvers);
+		await startApolloServer(app, schema, wrappedResolvers);
 
 		registerRestAPI(app);
 
