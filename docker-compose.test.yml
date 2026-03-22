@@ -10,43 +10,38 @@ services:
       - PORT=8600
       - ENV_ID=test
       - NODE_ENV=test
-      # Enable test auth bypass header in tests
       - TEST_AUTH_BYPASS_ENABLED=true
-      # Mock the user-cycle service for token validation
       - USER_CYCLE_GRAPHQL_URL=http://localhost:4000/graphql
-      # MySQL connection settings
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - MYSQL_USER=test
-      - MYSQL_PASSWORD=test
-      - MYSQL_DATABASE=telemetry-api
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=test
+      - DB_PASSWORD=test
+      - DB_NAME=telemetry-api
     ports:
       - 8600:8600
     volumes:
       - .:/app/
       - /app/node_modules
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
 
-  mysql:
-    image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password
+  postgres:
+    image: postgres:18
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=telemetry-api
-      - MYSQL_USER=test
-      - MYSQL_PASSWORD=test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
     ports:
-      - 3306:3306
+      - 5308:5432
     volumes:
-      - mysql-test-data:/var/lib/mysql
+      - postgres-test-data:/var/lib/postgresql
+      - ./test/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD-SHELL", "pg_isready -U test -d telemetry-api"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 10
-      start_period: 10s
 
 volumes:
-  mysql-test-data:
+  postgres-test-data:

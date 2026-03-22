@@ -5,13 +5,13 @@ import {errorCodes, TelemetryServerError} from "./error";
 import {addIoTMetrics} from "./controllers/iot-metrics";
 
 import {
-    readMetricsFromMySQL,
-    readAggregatedMetricsFromMySQLForToday,
-    readEntranceMovementFromMySQL,
-    readAggregatedWeightMetricsFromMySQL,
-    readPopulationMetricsFromMySQL,
-    writePopulationMetricsToMySQL
-} from "./models/mysql";
+    readMetricsFromPostgres,
+    readAggregatedMetricsFromPostgresForToday,
+    readEntranceMovementFromPostgres,
+    readAggregatedWeightMetricsFromPostgres,
+    readPopulationMetricsFromPostgres,
+    writePopulationMetricsToPostgres
+} from "./models/postgres";
 
 function wrapGraphqlError(code, message) {
     return {
@@ -48,7 +48,7 @@ async function wrapMetricsResponse(f: () => Promise<any>) {
         };
     }
     catch(err) {
-        logger.errorEnriched('Error reading from MySQL', err);
+        logger.errorEnriched('Error reading from Postgres', err);
 
         if (err instanceof TelemetryServerError) {
             return wrapGraphqlError(err.errorCode, err.message);
@@ -67,7 +67,7 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromMySQL(hiveId, timeRangeMin, "temperatureCelsius")
+                return readMetricsFromPostgres(hiveId, timeRangeMin, "temperatureCelsius")
             })
         },
         humidityPercent: async (_, {hiveId, timeRangeMin}, ctx) => {
@@ -77,7 +77,7 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromMySQL(hiveId, timeRangeMin, "humidityPercent")
+                return readMetricsFromPostgres(hiveId, timeRangeMin, "humidityPercent")
             })
         },
         weightKg: async (_, {hiveId, timeRangeMin}, ctx) => {
@@ -87,7 +87,7 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readMetricsFromMySQL(hiveId, timeRangeMin, "weightKg")
+                return readMetricsFromPostgres(hiveId, timeRangeMin, "weightKg")
             })
         },
         weightKgAggregated: async (_, {hiveId, days, aggregation}, ctx) => {
@@ -100,18 +100,18 @@ export const resolvers = {
             }
 
             return wrapMetricsResponse(()=>{
-                return readAggregatedWeightMetricsFromMySQL(hiveId, days, aggregation || 'DAILY_AVG')
+                return readAggregatedWeightMetricsFromPostgres(hiveId, days, aggregation || 'DAILY_AVG')
             })
         },
         entranceMovementToday: async (_, {hiveId, boxId}, ctx) => {
             try{
                 return {
                     __typename: "BeeMovementInOutResult",
-                    ... (await readAggregatedMetricsFromMySQLForToday(hiveId, boxId, ["beesIn", "beesOut", "beeInteractions"]))
+                    ... (await readAggregatedMetricsFromPostgresForToday(hiveId, boxId, ["beesIn", "beesOut", "beeInteractions"]))
                 };
             }
             catch(err) {
-                logger.errorEnriched('Error reading from MySQL', err);
+                logger.errorEnriched('Error reading from Postgres', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);
@@ -124,11 +124,11 @@ export const resolvers = {
             try{
                 return {
                     __typename: "EntranceMovementList",
-                    metrics: await readEntranceMovementFromMySQL(hiveId, boxId || null, timeFrom, timeTo)
+                    metrics: await readEntranceMovementFromPostgres(hiveId, boxId || null, timeFrom, timeTo)
                 };
             }
             catch(err) {
-                logger.errorEnriched('Error reading from MySQL', err);
+                logger.errorEnriched('Error reading from Postgres', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);
@@ -151,10 +151,10 @@ export const resolvers = {
             try {
                 return {
                     __typename: "PopulationMetricsList",
-                    metrics: await readPopulationMetricsFromMySQL(hiveId, daysToQuery)
+                    metrics: await readPopulationMetricsFromPostgres(hiveId, daysToQuery)
                 };
             } catch(err) {
-                logger.errorEnriched('Error reading population metrics from MySQL', err);
+                logger.errorEnriched('Error reading population metrics from Postgres', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);
@@ -174,7 +174,7 @@ export const resolvers = {
                     fields
                 });
             } catch (err) {
-                logger.errorEnriched('Error writing to MySQL', err);
+                logger.errorEnriched('Error writing to Postgres', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);
@@ -198,9 +198,9 @@ export const resolvers = {
 
             try {
                 const date = timestamp ? new Date(timestamp) : undefined;
-                await writePopulationMetricsToMySQL(hiveId, fields, inspectionId, date);
+                await writePopulationMetricsToPostgres(hiveId, fields, inspectionId, date);
             } catch (err) {
-                logger.errorEnriched('Error writing population metrics to MySQL', err);
+                logger.errorEnriched('Error writing population metrics to Postgres', err);
 
                 if (err instanceof TelemetryServerError) {
                     return wrapGraphqlError(err.errorCode, err.message);

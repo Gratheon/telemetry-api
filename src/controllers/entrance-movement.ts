@@ -1,4 +1,4 @@
-import {writeEntranceMovementToMySQL, writeBatchEntranceMovementToMySQL} from "../models/mysql";
+import {writeEntranceMovementToPostgres, writeBatchEntranceMovementToPostgres} from "../models/postgres";
 import {errorCodes, TelemetryServerError} from "../error";
 
 export async function addEntranceMovement(input) {
@@ -44,11 +44,11 @@ export async function addEntranceMovement(input) {
 
     // Use batch insert for multiple movements
     if (validatedMovements.length > 1) {
-        await writeBatchEntranceMovementToMySQL(validatedMovements);
+        await writeBatchEntranceMovementToPostgres(validatedMovements);
     } else {
         // Use single insert for one movement
         const movement = validatedMovements[0];
-        await writeEntranceMovementToMySQL(
+        await writeEntranceMovementToPostgres(
             movement.hiveId,
             movement.boxId,
             movement.beesOut,

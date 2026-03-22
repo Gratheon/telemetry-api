@@ -14,30 +14,30 @@ jest.mock("../../src/controllers/iot-metrics", () => ({
   addIoTMetrics: jest.fn(),
 }));
 
-jest.mock("../../src/models/mysql", () => ({
-  readMetricsFromMySQL: jest.fn(),
-  readAggregatedMetricsFromMySQLForToday: jest.fn(),
-  readEntranceMovementFromMySQL: jest.fn(),
-  readAggregatedWeightMetricsFromMySQL: jest.fn(),
-  readPopulationMetricsFromMySQL: jest.fn(),
-  writePopulationMetricsToMySQL: jest.fn(),
+jest.mock("../../src/models/postgres", () => ({
+  readMetricsFromPostgres: jest.fn(),
+  readAggregatedMetricsFromPostgresForToday: jest.fn(),
+  readEntranceMovementFromPostgres: jest.fn(),
+  readAggregatedWeightMetricsFromPostgres: jest.fn(),
+  readPopulationMetricsFromPostgres: jest.fn(),
+  writePopulationMetricsToPostgres: jest.fn(),
 }));
 
 import { addIoTMetrics } from "../../src/controllers/iot-metrics";
 import {
-  readMetricsFromMySQL,
-  readPopulationMetricsFromMySQL,
-  writePopulationMetricsToMySQL,
-} from "../../src/models/mysql";
+  readMetricsFromPostgres,
+  readPopulationMetricsFromPostgres,
+  writePopulationMetricsToPostgres,
+} from "../../src/models/postgres";
 import { resolvers } from "../../src/resolvers";
 import { TelemetryServerError, errorCodes } from "../../src/error";
 
 describe("resolvers", () => {
-  const mockReadMetricsFromMySQL = readMetricsFromMySQL as unknown as any;
-  const mockReadPopulationMetricsFromMySQL =
-    readPopulationMetricsFromMySQL as unknown as any;
-  const mockWritePopulationMetricsToMySQL =
-    writePopulationMetricsToMySQL as unknown as any;
+  const mockReadMetricsFromPostgres = readMetricsFromPostgres as unknown as any;
+  const mockReadPopulationMetricsFromPostgres =
+    readPopulationMetricsFromPostgres as unknown as any;
+  const mockWritePopulationMetricsToPostgres =
+    writePopulationMetricsToPostgres as unknown as any;
   const mockAddIoTMetrics = addIoTMetrics as unknown as any;
 
   beforeEach(() => {
@@ -59,7 +59,7 @@ describe("resolvers", () => {
   });
 
   it("returns metric list for successful temperature query", async () => {
-    mockReadMetricsFromMySQL.mockResolvedValue([
+    mockReadMetricsFromPostgres.mockResolvedValue([
       { t: new Date("2025-01-01T00:00:00.000Z"), v: 21.5 },
     ]);
 
@@ -69,7 +69,7 @@ describe("resolvers", () => {
       {},
     );
 
-    expect(readMetricsFromMySQL).toHaveBeenCalledWith(
+    expect(readMetricsFromPostgres).toHaveBeenCalledWith(
       "hive-1",
       15,
       "temperatureCelsius",
@@ -81,7 +81,7 @@ describe("resolvers", () => {
   });
 
   it("wraps TelemetryServerError in telemetry error response", async () => {
-    mockReadMetricsFromMySQL.mockRejectedValue(
+    mockReadMetricsFromPostgres.mockRejectedValue(
       new TelemetryServerError("db failure", errorCodes.fieldsMissing, 400),
     );
 
@@ -99,7 +99,7 @@ describe("resolvers", () => {
   });
 
   it("returns default-days population metrics", async () => {
-    mockReadPopulationMetricsFromMySQL.mockResolvedValue([
+    mockReadPopulationMetricsFromPostgres.mockResolvedValue([
       { t: new Date("2025-01-01T00:00:00.000Z"), beeCount: 10000 },
     ]);
 
@@ -109,7 +109,7 @@ describe("resolvers", () => {
       {},
     );
 
-    expect(readPopulationMetricsFromMySQL).toHaveBeenCalledWith("hive-1", 90);
+    expect(readPopulationMetricsFromPostgres).toHaveBeenCalledWith("hive-1", 90);
     expect(result).toMatchObject({
       __typename: "PopulationMetricsList",
       metrics: [{ beeCount: 10000 }],
@@ -145,7 +145,7 @@ describe("resolvers", () => {
   });
 
   it("writes population metric and returns OK", async () => {
-    mockWritePopulationMetricsToMySQL.mockResolvedValue(undefined);
+    mockWritePopulationMetricsToPostgres.mockResolvedValue(undefined);
 
     const result = await resolvers.Mutation.addPopulationMetric(
       null,
@@ -158,7 +158,7 @@ describe("resolvers", () => {
       { uid: "user-1" },
     );
 
-    expect(writePopulationMetricsToMySQL).toHaveBeenCalledWith(
+    expect(writePopulationMetricsToPostgres).toHaveBeenCalledWith(
       "hive-1",
       { beeCount: 9000 },
       "inspection-1",

@@ -1,10 +1,10 @@
-import { sql } from "@databases/mysql";
+import { sql } from "@databases/pg";
 import { logger } from "../logger";
 import { recordDbQuery } from "../metrics";
 
 import { storage } from "../storage";
 
-async function runMySqlQuery<T>(queryName: string, query: any): Promise<T> {
+async function runPostgresQuery<T>(queryName: string, query: any): Promise<T> {
     const start = process.hrtime.bigint();
 
     try {
@@ -34,20 +34,20 @@ async function runMySqlQuery<T>(queryName: string, query: any): Promise<T> {
 }
 
 // iot sensors metrics
-export async function readMetricsFromMySQL(
+export async function readMetricsFromPostgres(
     hiveId: string,
     rangeMin: number = 60,
     field: string
 ) {
-    // Map InfluxDB field names to MySQL column names
+    // Map InfluxDB field names to Postgres column names
     const fieldMapping = {
         'temperatureCelsius': 'temperature_celsius',
         'humidityPercent': 'humidity_percent',
         'weightKg': 'weight_kg'
     };
 
-    const mysqlField = fieldMapping[field];
-    if (!mysqlField) {
+    const postgresField = fieldMapping[field];
+    if (!postgresField) {
         throw new Error(`Invalid field: ${field}`);
     }
 
@@ -56,29 +56,29 @@ export async function readMetricsFromMySQL(
     rangeTime.setMinutes(rangeTime.getMinutes() - rangeMin);
 
     try {
-        const rows = await runMySqlQuery<any[]>(
+        const rows = await runPostgresQuery<any[]>(
             "read_metrics",
             sql`SELECT 
                 time as t, 
-                ${sql.ident(mysqlField)} as v 
+                ${sql.ident(postgresField)} as v 
             FROM 
                 beehive_metrics 
             WHERE 
                 hive_id = ${hiveId} 
                 AND time >= ${rangeTime} 
-                AND ${sql.ident(mysqlField)} IS NOT NULL 
+                AND ${sql.ident(postgresField)} IS NOT NULL 
             ORDER BY 
                 time ASC`
         );
 
         return rows;
     } catch (error) {
-        logger.error(`Error reading metrics from MySQL: ${error}`);
+        logger.error(`Error reading metrics from Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function writeBeehiveMetricsToMySQL(
+export async function writeBeehiveMetricsToPostgres(
     hiveId: string,
     fields: {
         temperatureCelsius?: number;
@@ -88,7 +88,7 @@ export async function writeBeehiveMetricsToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await runMySqlQuery<void>(
+        await runPostgresQuery<void>(
             "write_beehive_metrics",
             sql`INSERT INTO beehive_metrics 
             (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
@@ -101,12 +101,12 @@ export async function writeBeehiveMetricsToMySQL(
             )`
         );
     } catch (error) {
-        logger.error(`Error writing beehive metrics to MySQL: ${error}`);
+        logger.error(`Error writing beehive metrics to Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function writeBatchBeehiveMetricsToMySQL(
+export async function writeBatchBeehiveMetricsToPostgres(
     metrics: Array<{
         hiveId: string;
         fields: {
@@ -131,20 +131,20 @@ export async function writeBatchBeehiveMetricsToMySQL(
             )`
         );
 
-        await runMySqlQuery<void>(
+        await runPostgresQuery<void>(
             "write_batch_beehive_metrics",
             sql`INSERT INTO beehive_metrics 
             (hive_id, temperature_celsius, humidity_percent, weight_kg, time) 
             VALUES ${sql.join(values, sql`, `)}`
         );
     } catch (error) {
-        logger.error(`Error writing batch beehive metrics to MySQL: ${error}`);
+        logger.error(`Error writing batch beehive metrics to Postgres: ${error}`);
         throw error;
     }
 }
 
 // movement metrics
-export async function readAggregatedMetricsFromMySQLForToday(
+export async function readAggregatedMetricsFromPostgresForToday(
     hiveId: string,
     boxId: string,
     fields: string[]
@@ -159,7 +159,7 @@ export async function readAggregatedMetricsFromMySQLForToday(
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         // Build the query
-        const rows = await runMySqlQuery<any[]>(
+        const rows = await runPostgresQuery<any[]>(
             "read_aggregated_metrics_today",
             sql`SELECT 
                 SUM(bees_in) as beesIn,
@@ -183,12 +183,12 @@ export async function readAggregatedMetricsFromMySQLForToday(
         // Return the first row or empty object if no rows
         return rows[0] || { beesIn: 0, beesOut: 0, netFlow: 0, avgSpeed: 0, p95Speed: 0, stationaryBees: 0, detectedBees: 0, beeInteractions: 0, time: null };
     } catch (error) {
-        logger.error(`Error reading aggregated metrics from MySQL: ${error}`);
+        logger.error(`Error reading aggregated metrics from Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function readEntranceMovementFromMySQL(
+export async function readEntranceMovementFromPostgres(
     hiveId: string,
     boxId: string | null,
     timeFrom: Date,
@@ -240,15 +240,15 @@ export async function readEntranceMovementFromMySQL(
             ORDER BY
                 time ASC`;
 
-        const rows = await runMySqlQuery<any[]>("read_entrance_movement", query);
+        const rows = await runPostgresQuery<any[]>("read_entrance_movement", query);
         return rows;
     } catch (error) {
-        logger.error(`Error reading entrance movement from MySQL: ${error}`);
+        logger.error(`Error reading entrance movement from Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function writeEntranceMovementToMySQL(
+export async function writeEntranceMovementToPostgres(
     hiveId: string,
     boxId: string,
     beesOut: number | null,
@@ -262,19 +262,19 @@ export async function writeEntranceMovementToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await runMySqlQuery<void>(
+        await runPostgresQuery<void>(
             "write_entrance_movement",
             sql`INSERT INTO entrance_observer 
             (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
             VALUES (${hiveId}, ${boxId}, ${beesOut}, ${beesIn}, ${netFlow}, ${avgSpeed}, ${p95Speed}, ${stationaryBees}, ${detectedBees}, ${beeInteractions}, ${timestamp})`
         );
     } catch (error) {
-        logger.error(`Error writing entrance movement to MySQL: ${error}`);
+        logger.error(`Error writing entrance movement to Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function writeBatchEntranceMovementToMySQL(
+export async function writeBatchEntranceMovementToPostgres(
     movements: Array<{
         hiveId: string;
         boxId: string;
@@ -308,19 +308,19 @@ export async function writeBatchEntranceMovementToMySQL(
             )`
         );
 
-        await runMySqlQuery<void>(
+        await runPostgresQuery<void>(
             "write_batch_entrance_movement",
             sql`INSERT INTO entrance_observer 
             (hive_id, box_id, bees_out, bees_in, net_flow, avg_speed_px_per_frame, p95_speed_px_per_frame, stationary_bees_count, detected_bees, bee_interactions, time) 
             VALUES ${sql.join(values, sql`, `)}`
         );
     } catch (error) {
-        logger.error(`Error writing batch entrance movement to MySQL: ${error}`);
+        logger.error(`Error writing batch entrance movement to Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function readAggregatedWeightMetricsFromMySQL(
+export async function readAggregatedWeightMetricsFromPostgres(
     hiveId: string,
     days: number = 365,
     aggregation: 'DAILY_AVG' | 'DAILY_MAX' | 'DAILY_MIN' = 'DAILY_AVG'
@@ -333,7 +333,7 @@ export async function readAggregatedWeightMetricsFromMySQL(
     if (aggregation === 'DAILY_MIN') aggregationFunc = 'MIN';
 
     try {
-        const rows = await runMySqlQuery<any[]>(
+        const rows = await runPostgresQuery<any[]>(
             "read_aggregated_weight_metrics",
             sql`SELECT 
                 DATE(time) as date,
@@ -355,12 +355,12 @@ export async function readAggregatedWeightMetricsFromMySQL(
             v: row.v
         }));
     } catch (error) {
-        logger.error(`Error reading aggregated metrics from MySQL: ${error}`);
+        logger.error(`Error reading aggregated metrics from Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function readPopulationMetricsFromMySQL(
+export async function readPopulationMetricsFromPostgres(
     hiveId: string,
     days: number = 90
 ) {
@@ -368,7 +368,7 @@ export async function readPopulationMetricsFromMySQL(
     rangeTime.setDate(rangeTime.getDate() - days);
 
     try {
-        const rows = await runMySqlQuery<any[]>(
+        const rows = await runPostgresQuery<any[]>(
             "read_population_metrics",
             sql`SELECT 
                 time as t,
@@ -387,12 +387,12 @@ export async function readPopulationMetricsFromMySQL(
 
         return rows;
     } catch (error) {
-        logger.error(`Error reading population metrics from MySQL: ${error}`);
+        logger.error(`Error reading population metrics from Postgres: ${error}`);
         throw error;
     }
 }
 
-export async function writePopulationMetricsToMySQL(
+export async function writePopulationMetricsToPostgres(
     hiveId: string,
     fields: {
         beeCount?: number;
@@ -403,7 +403,7 @@ export async function writePopulationMetricsToMySQL(
     timestamp: Date = new Date()
 ) {
     try {
-        await runMySqlQuery<void>(
+        await runPostgresQuery<void>(
             "write_population_metrics",
             sql`INSERT INTO population_metrics 
             (hive_id, bee_count, drone_count, varroa_mite_count, inspection_id, time) 
@@ -417,7 +417,7 @@ export async function writePopulationMetricsToMySQL(
             )`
         );
     } catch (error) {
-        logger.error(`Error writing population metrics to MySQL: ${error}`);
+        logger.error(`Error writing population metrics to Postgres: ${error}`);
         throw error;
     }
 }

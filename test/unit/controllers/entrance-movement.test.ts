@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
-jest.mock("../../../src/models/mysql", () => ({
-  writeEntranceMovementToMySQL: jest.fn(),
-  writeBatchEntranceMovementToMySQL: jest.fn(),
+jest.mock("../../../src/models/postgres", () => ({
+  writeEntranceMovementToPostgres: jest.fn(),
+  writeBatchEntranceMovementToPostgres: jest.fn(),
 }));
 
 import {
-  writeBatchEntranceMovementToMySQL,
-  writeEntranceMovementToMySQL,
-} from "../../../src/models/mysql";
+  writeBatchEntranceMovementToPostgres,
+  writeEntranceMovementToPostgres,
+} from "../../../src/models/postgres";
 import { addEntranceMovement } from "../../../src/controllers/entrance-movement";
 import { TelemetryServerError, errorCodes } from "../../../src/error";
 
@@ -60,8 +60,8 @@ describe("addEntranceMovement", () => {
       timestamp: 1704067200,
     });
 
-    expect(writeBatchEntranceMovementToMySQL).not.toHaveBeenCalled();
-    expect(writeEntranceMovementToMySQL).toHaveBeenCalledWith(
+    expect(writeBatchEntranceMovementToPostgres).not.toHaveBeenCalled();
+    expect(writeEntranceMovementToPostgres).toHaveBeenCalledWith(
       "hive-1",
       "box-1",
       12,
@@ -93,9 +93,9 @@ describe("addEntranceMovement", () => {
       },
     ]);
 
-    expect(writeEntranceMovementToMySQL).not.toHaveBeenCalled();
-    expect(writeBatchEntranceMovementToMySQL).toHaveBeenCalledTimes(1);
-    const [batchPayload] = (writeBatchEntranceMovementToMySQL as jest.Mock).mock
+    expect(writeEntranceMovementToPostgres).not.toHaveBeenCalled();
+    expect(writeBatchEntranceMovementToPostgres).toHaveBeenCalledTimes(1);
+    const [batchPayload] = (writeBatchEntranceMovementToPostgres as jest.Mock).mock
       .calls[0];
     expect(batchPayload).toHaveLength(2);
     expect(batchPayload[0]).toMatchObject({

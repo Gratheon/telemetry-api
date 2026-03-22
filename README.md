@@ -74,7 +74,7 @@ Example:
 
 ## Database Schema
 
-The service uses MySQL with three main tables:
+The service uses PostgreSQL with three main tables:
 
 ### beehive_metrics
 Stores IoT sensor data (temperature, humidity, weight)
@@ -128,7 +128,7 @@ This project uses Jest with separate unit and integration test suites.
 # Run unit tests
 npm run test:unit
 
-# Run integration tests locally (requires running MySQL instance)
+# Run integration tests locally (requires running PostgreSQL instance)
 npm run test:integration
 
 # Run all tests (unit + integration)
@@ -180,16 +180,16 @@ just run
 ## Architecture
 
 We are NOT using timeseries DB (influx, clickhouse) because we don't have manpower to maintain multiple storage engines at this time.
-So we're relying on MySQL for ease of management, even though its not as efficient.
+So we're relying on PostgreSQL for ease of management, even though its not as efficient.
 
 ```mermaid
 flowchart LR
 	hardware-beehive-sensors[<a href="https://github.com/Gratheon/hardware-beehive-sensors">hardware-beehive-sensors</a>] -."send aggregate (5sec)\n metric value".-> telemetry-api
 
-	telemetry-api --"update beehive entrance daily traffic counters"--> mysql[(<a href="https://github.com/Gratheon/mysql">mysql</a>)]
+	telemetry-api --"update beehive entrance daily traffic counters"--> postgres[(<a href="https://github.com/Gratheon/postgres">postgres</a>)]
 	beehive-entrance-video-processor[<a href="https://github.com/Gratheon/beehive-entrance-video-processor">beehive-entrance-video-processor</a>] -."send entrance\n traffic metric".-> telemetry-api
-	telemetry-api --"store bee traffic timeseries" --> mysql
-	grafana[(<a href="https://github.com/Gratheon/grafana">grafana</a>)] --"fetch history"--> mysql
+	telemetry-api --"store bee traffic timeseries" --> postgres
+	grafana[(<a href="https://github.com/Gratheon/grafana">grafana</a>)] --"fetch history"--> postgres
 
 	telemetry-api --"verify API tokens for REST calls"--> user-cycle[<a href="https://github.com/Gratheon/user-cycle">user-cycle</a>]
 	web-app[<a href="https://github.com/Gratheon/web-app">web-app</a>] --"display advanced configureable graphs"--> grafana

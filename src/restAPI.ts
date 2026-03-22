@@ -41,13 +41,13 @@ export function registerRestAPI(app) {
         });
       } catch (e: any) {
         if (e instanceof TelemetryServerError) {
-          logger.errorEnriched("Error writing to MySQL", e);
+          logger.errorEnriched("Error writing to Postgres", e);
           res.status(e.httpStatus)
             .send(JSON.stringify({
               error: e.message
             }));
         } else {
-            logger.errorEnriched("Error writing to MySQL", e);
+            logger.errorEnriched("Error writing to Postgres", e);
             res.status(500)
                 .send(JSON.stringify({
                   error: "Internal Server Error"
@@ -74,13 +74,13 @@ export function registerRestAPI(app) {
         });
       } catch (e: any) {
         if (e instanceof TelemetryServerError) {
-          logger.errorEnriched("Error writing to MySQL", e);
+          logger.errorEnriched("Error writing to Postgres", e);
           res.status(e.httpStatus)
             .send(JSON.stringify({
               error: e.message
             }));
         } else {
-            logger.errorEnriched("Error writing to MySQL", e);
+            logger.errorEnriched("Error writing to Postgres", e);
             res.status(500)
                 .send(JSON.stringify({
                   error: "Internal Server Error"
