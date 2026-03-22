@@ -1,4 +1,4 @@
-import {writeBeehiveMetricsToMySQL, writeBatchBeehiveMetricsToMySQL} from "../models/mysql";
+import {writeBeehiveMetricsToPostgres, writeBatchBeehiveMetricsToPostgres} from "../models/postgres";
 import {errorCodes, TelemetryServerError} from "../error";
 
 export async function addIoTMetrics(input) {
@@ -29,10 +29,10 @@ export async function addIoTMetrics(input) {
 
     // Use batch insert for multiple metrics
     if (validatedMetrics.length > 1) {
-        await writeBatchBeehiveMetricsToMySQL(validatedMetrics);
+        await writeBatchBeehiveMetricsToPostgres(validatedMetrics);
     } else {
         // Use single insert for one metric
         const metric = validatedMetrics[0];
-        await writeBeehiveMetricsToMySQL(metric.hiveId, metric.fields, metric.timestamp);
+        await writeBeehiveMetricsToPostgres(metric.hiveId, metric.fields, metric.timestamp);
     }
 }

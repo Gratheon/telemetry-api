@@ -4,17 +4,13 @@ const config = {
   selfUrl: "telemetry-api:8600",
   userCycleUrl: "http://user-cycle:4000",
 
-  // MySQL configuration
-  mysql: {
-		host: 'mysql',
-		port: '3306',
-		user: 'test',
-		password: 'test',
-		database: 'telemetry-api',
-		// Root credentials for database creation (optional)
-		rootUser: 'root',
-		rootPassword: 'test',
-  }
+  postgres: {
+    host: process.env.DB_HOST || "postgres",
+    port: process.env.DB_PORT || "5432",
+    user: process.env.DB_USER || "test",
+    password: process.env.DB_PASSWORD || "test",
+    database: process.env.DB_NAME || "telemetry-api",
+  },
 };
 
 export default config;

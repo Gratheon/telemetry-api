@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
-jest.mock("../../../src/models/mysql", () => ({
-  writeBeehiveMetricsToMySQL: jest.fn(),
-  writeBatchBeehiveMetricsToMySQL: jest.fn(),
+jest.mock("../../../src/models/postgres", () => ({
+  writeBeehiveMetricsToPostgres: jest.fn(),
+  writeBatchBeehiveMetricsToPostgres: jest.fn(),
 }));
 
 import {
-  writeBatchBeehiveMetricsToMySQL,
-  writeBeehiveMetricsToMySQL,
-} from "../../../src/models/mysql";
+  writeBatchBeehiveMetricsToPostgres,
+  writeBeehiveMetricsToPostgres,
+} from "../../../src/models/postgres";
 import { addIoTMetrics } from "../../../src/controllers/iot-metrics";
 import { TelemetryServerError, errorCodes } from "../../../src/error";
 
@@ -55,9 +55,9 @@ describe("addIoTMetrics", () => {
       timestamp: 1704067200,
     });
 
-    expect(writeBeehiveMetricsToMySQL).toHaveBeenCalledTimes(1);
-    expect(writeBatchBeehiveMetricsToMySQL).not.toHaveBeenCalled();
-    expect(writeBeehiveMetricsToMySQL).toHaveBeenCalledWith(
+    expect(writeBeehiveMetricsToPostgres).toHaveBeenCalledTimes(1);
+    expect(writeBatchBeehiveMetricsToPostgres).not.toHaveBeenCalled();
+    expect(writeBeehiveMetricsToPostgres).toHaveBeenCalledWith(
       "hive-1",
       { humidityPercent: 55 },
       new Date(1704067200 * 1000),
@@ -77,9 +77,9 @@ describe("addIoTMetrics", () => {
       },
     ]);
 
-    expect(writeBeehiveMetricsToMySQL).not.toHaveBeenCalled();
-    expect(writeBatchBeehiveMetricsToMySQL).toHaveBeenCalledTimes(1);
-    const [batchPayload] = (writeBatchBeehiveMetricsToMySQL as jest.Mock).mock
+    expect(writeBeehiveMetricsToPostgres).not.toHaveBeenCalled();
+    expect(writeBatchBeehiveMetricsToPostgres).toHaveBeenCalledTimes(1);
+    const [batchPayload] = (writeBatchBeehiveMetricsToPostgres as jest.Mock).mock
       .calls[0];
     expect(batchPayload).toHaveLength(2);
     expect(batchPayload[0]).toMatchObject({
