@@ -55,7 +55,10 @@ async function startApolloServer(app, typeDefs, resolvers) {
 }
 
 (async function main() {
-	const app = fastify({ loggerInstance: fastifyLogger });
+	const app = fastify({
+		loggerInstance: fastifyLogger,
+		disableRequestLogging: true,
+	});
 
 	app.setErrorHandler(async (error, request, reply) => {
 		// Logging locally
