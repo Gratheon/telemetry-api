@@ -162,14 +162,14 @@ export async function readAggregatedMetricsFromPostgresForToday(
         const rows = await runPostgresQuery<any[]>(
             "read_aggregated_metrics_today",
             sql`SELECT 
-                SUM(bees_in) as beesIn,
-                SUM(bees_out) as beesOut,
-                SUM(net_flow) as netFlow,
-                AVG(avg_speed_px_per_frame) as avgSpeed,
-                AVG(p95_speed_px_per_frame) as p95Speed,
-                SUM(stationary_bees_count) as stationaryBees,
-                SUM(detected_bees) as detectedBees,
-                SUM(bee_interactions) as beeInteractions,
+                SUM(bees_in) as "beesIn",
+                SUM(bees_out) as "beesOut",
+                SUM(net_flow) as "netFlow",
+                AVG(avg_speed_px_per_frame) as "avgSpeed",
+                AVG(p95_speed_px_per_frame) as "p95Speed",
+                SUM(stationary_bees_count) as "stationaryBees",
+                SUM(detected_bees) as "detectedBees",
+                SUM(bee_interactions) as "beeInteractions",
                 MAX(time) as time
             FROM 
                 entrance_observer
@@ -198,17 +198,17 @@ export async function readEntranceMovementFromPostgres(
         const query = boxId
             ? sql`SELECT
                 id,
-                hive_id as hiveId,
-                box_id as boxId,
-                bees_out as beesOut,
-                bees_in as beesIn,
+                hive_id as "hiveId",
+                box_id as "boxId",
+                bees_out as "beesOut",
+                bees_in as "beesIn",
                 time,
-                net_flow as netFlow,
-                avg_speed_px_per_frame as avgSpeed,
-                p95_speed_px_per_frame as p95Speed,
-                stationary_bees_count as stationaryBees,
-                detected_bees as detectedBees,
-                bee_interactions as beeInteractions
+                net_flow as "netFlow",
+                avg_speed_px_per_frame as "avgSpeed",
+                p95_speed_px_per_frame as "p95Speed",
+                stationary_bees_count as "stationaryBees",
+                detected_bees as "detectedBees",
+                bee_interactions as "beeInteractions"
             FROM
                 entrance_observer
             WHERE
@@ -220,17 +220,17 @@ export async function readEntranceMovementFromPostgres(
                 time ASC`
             : sql`SELECT
                 id,
-                hive_id as hiveId,
-                box_id as boxId,
-                bees_out as beesOut,
-                bees_in as beesIn,
+                hive_id as "hiveId",
+                box_id as "boxId",
+                bees_out as "beesOut",
+                bees_in as "beesIn",
                 time,
-                net_flow as netFlow,
-                avg_speed_px_per_frame as avgSpeed,
-                p95_speed_px_per_frame as p95Speed,
-                stationary_bees_count as stationaryBees,
-                detected_bees as detectedBees,
-                bee_interactions as beeInteractions
+                net_flow as "netFlow",
+                avg_speed_px_per_frame as "avgSpeed",
+                p95_speed_px_per_frame as "p95Speed",
+                stationary_bees_count as "stationaryBees",
+                detected_bees as "detectedBees",
+                bee_interactions as "beeInteractions"
             FROM
                 entrance_observer
             WHERE
@@ -372,10 +372,10 @@ export async function readPopulationMetricsFromPostgres(
             "read_population_metrics",
             sql`SELECT 
                 time as t,
-                bee_count as beeCount,
-                drone_count as droneCount,
-                varroa_mite_count as varroaMiteCount,
-                inspection_id as inspectionId
+                bee_count as "beeCount",
+                drone_count as "droneCount",
+                varroa_mite_count as "varroaMiteCount",
+                inspection_id as "inspectionId"
             FROM 
                 population_metrics 
             WHERE 
