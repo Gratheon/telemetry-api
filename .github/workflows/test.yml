@@ -15,38 +15,21 @@ on:
   workflow_call:
 
 jobs:
-  unit-tests:
+  go-tests:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
       with:
-        node-version-file: '.nvmrc'
-        cache: 'npm'
+        go-version-file: 'go.mod'
+        cache: true
 
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run unit tests
-      run: npm run test:unit
-
-    - name: Upload coverage to Codecov
-      if: ${{ secrets.CODECOV_TOKEN != '' }}
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./test-results/unit-coverage/lcov.info
-        flags: unit
-        fail_ci_if_error: true
-        verbose: true
-
-    - name: Skip Codecov upload (missing token)
-      if: ${{ secrets.CODECOV_TOKEN == '' }}
-      run: echo "Skipping Codecov upload because CODECOV_TOKEN is not available in this workflow context."
+    - name: Run Go tests
+      run: go test ./...
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -55,14 +38,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
       with:
-        node-version-file: '.nvmrc'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
+        go-version-file: 'go.mod'
+        cache: true
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -84,7 +64,7 @@ jobs:
     - name: Run integration tests
       run: |
         mkdir -p test-results
-        API_HOST=localhost CI=true npm run test:integration
+        TEST_DB_DSN="host=localhost port=5308 user=test password=test dbname=telemetry-api sslmode=disable" go test -run TestPostgresStoreRoundTrip ./...
     
     - name: Save test logs
       if: always()

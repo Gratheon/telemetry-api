@@ -1,0 +1,16 @@
+{
+  "http_port": 8600,
+  "schema_registry_url": "",
+  "self_url": "telemetry-api:8600",
+  "user_cycle_url": "http://user-cycle:3000",
+  "test_auth_bypass_enabled": true,
+  "log_level": "error",
+  "postgres": {
+    "host": "postgres",
+    "port": 5432,
+    "user": "test",
+    "password": "test",
+    "database": "telemetry-api",
+    "sslmode": "disable"
+  }
+}

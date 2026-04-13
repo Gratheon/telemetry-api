@@ -1,8 +1,0 @@
-{
-	"extends": "../src/config/tsconfig.json",
-	"compilerOptions": {
-	  "types": ["jest"]
-	},
-	"exclude": ["../src"],
-	"include": ["../test/**/*"]
-  }

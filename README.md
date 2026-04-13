@@ -120,50 +120,38 @@ See [migrations/](migrations/) for full schema definitions.
 
 ## Testing
 
-This project uses Jest with separate unit and integration test suites.
+This project uses Go tests for both unit-style and integration-style coverage.
 
 ### Running Tests
 
 ```bash
-# Run unit tests
-npm run test:unit
-
-# Run integration tests locally (requires running PostgreSQL instance)
-npm run test:integration
-
-# Run all tests (unit + integration)
-npm test
+# Run all Go tests
+go test ./...
 
 # Run tests in Docker (includes all dependencies)
-npm run test:docker
+docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
 
 # Start test environment for manual testing
-npm run test:docker:start
+docker compose -f docker-compose.test.yml up -d
 
 # Stop test environment
-npm run test:docker:stop
+docker compose -f docker-compose.test.yml down -v
 ```
 
 ### Test Coverage
 
-Unit tests are located in `test/unit/` and cover:
-- **REST controllers** (`controllers/*.test.ts`) - request validation and batch/single write flow
-- **Auth middleware** (`middleware/auth.test.ts`) - header parsing and token validation behavior
-- **GraphQL resolvers** (`resolvers.test.ts`) - validation branches and error/result wrapping
-- **Error model** (`error.test.ts`) - custom error properties
-
-Integration tests are located in `test/integration/` and cover:
-- **GraphQL API** (`graphql.test.ts`) - Query/mutation validation and error handling
-- **REST API** (`iot-metrics.test.ts`) - Input validation, authentication, batch operations
-- **Entrance Movement** (`entrance-movement.test.ts`) - Bee traffic metrics
-- **Population Metrics** (`population-metrics.test.ts`) - Hive population data
-- **Data Generation** (`generate-population-data.test.ts`) - Bulk data insertion
+Go tests cover:
+- REST request validation and success paths
+- GraphQL query and mutation validation
+- Resolver and controller behavior
+- Prometheus metrics wiring
+- Optional Postgres roundtrip testing against Dockerized PostgreSQL
 
 Tests include:
 - Input validation and error cases
-- Authentication and authorization
-- Bulk data operations (up to 8,640 metrics per month)
+- REST and GraphQL contract checks
 - Time range queries and aggregations
+- Database migration and storage roundtrip coverage
 
 ## Installation & Development
 

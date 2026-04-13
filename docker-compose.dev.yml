@@ -5,22 +5,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "npm ci && npm run build && node /app/app/telemetry-api.js"
     environment:
       - PORT=8600
       - ENV_ID=dev
-      - NODE_ENV=development
       - DB_HOST=host.docker.internal
       - DB_PORT=5300
       - DB_USER=test
       - DB_PASSWORD=test
       - DB_NAME=telemetry-api
-    tty: true
     ports:
       - 8600:8600
-    volumes:
-      - .:/app/
-      - /app/node_modules
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
