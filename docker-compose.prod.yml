@@ -10,5 +10,9 @@ services:
       - ENV_ID=prod
       - DD_ENV=prod
       - DD_PROFILING_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318}
+      - OTEL_SERVICE_NAME=telemetry-api
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=prod,service.namespace=gratheon
+      - HYPERDX_API_KEY=${HYPERDX_API_KEY:-}
     restart: always
     network_mode: host

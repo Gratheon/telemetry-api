@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	logger "github.com/Gratheon/log-lib-go"
 	"github.com/Gratheon/telemetry-api/internal/telemetry"
 )
 
@@ -95,7 +96,7 @@ func newIntegrationServer(t *testing.T, store *integrationStoreMock) *httptest.S
 	return httptest.NewServer(newHTTPHandler(config{
 		TestAuthBypassEnabled: true,
 		LogLevel:              "error",
-	}, store))
+	}, store, logger.New(logger.LoggerConfig{LogLevel: logger.LogLevelError})))
 }
 
 func doJSONRequest(t *testing.T, client *http.Client, method, url string, body interface{}, headers map[string]string) (*http.Response, []byte) {

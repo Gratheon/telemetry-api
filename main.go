@@ -15,7 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	logger.Configure(logger.LoggerConfig{
+	logrusInstance := logger.Configure(logger.LoggerConfig{
 		LogLevel: logger.LogLevel(cfg.LogLevel),
 	})
 
@@ -36,7 +36,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:              ":" + itoa(cfg.Port),
-		Handler:           newHTTPHandler(cfg, store),
+		Handler:           newHTTPHandler(cfg, store, logrusInstance),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

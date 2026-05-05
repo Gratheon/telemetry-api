@@ -18,16 +18,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
+	"github.com/sirupsen/logrus"
 )
 
 type userIDContextKey struct{}
 
-func newHTTPHandler(cfg config, store telemetry.Store) http.Handler {
+func newHTTPHandler(cfg config, store telemetry.Store, logrusInstance *logrus.Logger) http.Handler {
 	router := chi.NewRouter()
 	router.Use(chimiddleware.RequestID)
+	router.Use(logger.NewTraceMiddleware("telemetry-api"))
 	router.Use(telemetrymetrics.HTTPMiddleware)
 	router.Use(cors.AllowAll().Handler)
-	router.Use(logger.NewStructuredLogger(logger.New(logger.LoggerConfig{LogLevel: logger.LogLevel(cfg.LogLevel)})))
+	router.Use(logger.NewStructuredLogger(logrusInstance))
 
 	router.Get("/", rootHandler)
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
