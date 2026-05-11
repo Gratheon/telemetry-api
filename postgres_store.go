@@ -105,16 +105,16 @@ func (s *postgresStore) WriteBeehiveMetrics(ctx context.Context, input telemetry
 	query := `
 		WITH dedupe_insert AS (
 			INSERT INTO beehive_metric_dedupe (hive_id, dedupe_key)
-			SELECT $1, $2
-			WHERE $2 IS NOT NULL
+			SELECT $1, $2::varchar(128)
+			WHERE $2::varchar(128) IS NOT NULL
 			ON CONFLICT (hive_id, dedupe_key) DO NOTHING
 			RETURNING 1
 		)
 		INSERT INTO beehive_metrics
 			(hive_id, temperature_celsius, humidity_percent, weight_kg, dedupe_key, time)
 		SELECT
-			$1, $3, $4, $5, $2, $6
-		WHERE $2 IS NULL OR EXISTS (SELECT 1 FROM dedupe_insert)
+			$1, $3, $4, $5, $2::varchar(128), $6
+		WHERE $2::varchar(128) IS NULL OR EXISTS (SELECT 1 FROM dedupe_insert)
 	`
 	_, err := s.db.ExecContext(ctx, query, input.HiveID, input.DedupeKey, input.Fields.TemperatureCelsius, input.Fields.HumidityPercent, input.Fields.WeightKg, input.Timestamp)
 	recordDBQuery("write_beehive_metrics", start, err)
