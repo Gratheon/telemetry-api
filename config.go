@@ -100,7 +100,7 @@ func readConfig() (config, error) {
 
 func setConfigDefaults(v *viper.Viper) {
 	v.SetDefault("http_port", 8600)
-	v.SetDefault("schema_registry_url", "")
+	v.SetDefault("schema_registry_url", "http://gql-schema-registry:3000")
 	v.SetDefault("self_url", "telemetry-api:8600")
 	v.SetDefault("user_cycle_url", "http://user-cycle:3000")
 	v.SetDefault("test_auth_bypass_enabled", false)
