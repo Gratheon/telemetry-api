@@ -4,6 +4,7 @@
   "self_url": "telemetry-api:8600",
   "user_cycle_url": "http://user-cycle:3000",
   "test_auth_bypass_enabled": false,
+  "migrations_enabled": true,
   "log_level": "info",
   "postgres": {
     "host": "postgres",

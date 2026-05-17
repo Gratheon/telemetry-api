@@ -28,8 +28,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := runMigrations(ctx, store.SQLDB()); err != nil {
-		logger.Fatal("failed to run migrations", map[string]interface{}{"error": err.Error()})
+	if cfg.MigrationsEnabled {
+		if err := runMigrations(ctx, store.SQLDB()); err != nil {
+			logger.Fatal("failed to run migrations", map[string]interface{}{"error": err.Error()})
+		}
+	} else {
+		logger.Info("database migrations disabled")
 	}
 
 	registerSchema(context.Background(), cfg, graphqlSchema)

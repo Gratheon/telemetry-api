@@ -45,6 +45,7 @@ type config struct {
 	SelfURL               string
 	UserCycleURL          string
 	TestAuthBypassEnabled bool
+	MigrationsEnabled     bool
 	EnvironmentID         string
 	LogLevel              string
 	Postgres              postgresConfig
@@ -81,6 +82,7 @@ func readConfig() (config, error) {
 		SelfURL:               v.GetString("self_url"),
 		UserCycleURL:          v.GetString("user_cycle_url"),
 		TestAuthBypassEnabled: v.GetBool("test_auth_bypass_enabled"),
+		MigrationsEnabled:     v.GetBool("migrations_enabled"),
 		EnvironmentID:         envID,
 		LogLevel:              v.GetString("log_level"),
 		Postgres: postgresConfig{
@@ -104,6 +106,7 @@ func setConfigDefaults(v *viper.Viper) {
 	v.SetDefault("self_url", "telemetry-api:8600")
 	v.SetDefault("user_cycle_url", "http://user-cycle:3000")
 	v.SetDefault("test_auth_bypass_enabled", false)
+	v.SetDefault("migrations_enabled", true)
 	v.SetDefault("log_level", "info")
 	v.SetDefault("postgres.host", "localhost")
 	v.SetDefault("postgres.port", 5432)
@@ -135,6 +138,9 @@ func overrideConfigFromEnv(cfg *config) {
 	}
 	if value := strings.TrimSpace(os.Getenv("TEST_AUTH_BYPASS_ENABLED")); value != "" {
 		cfg.TestAuthBypassEnabled = strings.EqualFold(value, "true") || value == "1"
+	}
+	if value := strings.TrimSpace(os.Getenv("MIGRATIONS_ENABLED")); value != "" {
+		cfg.MigrationsEnabled = strings.EqualFold(value, "true") || value == "1"
 	}
 	if value := strings.TrimSpace(os.Getenv("LOG_LEVEL")); value != "" {
 		cfg.LogLevel = value
