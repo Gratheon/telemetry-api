@@ -72,7 +72,7 @@ type EntranceMovementRecord struct {
 	P95Speed        *float64  `db:"p95_speed"`
 	StationaryBees  *int      `db:"stationary_bees"`
 	DetectedBees    *int      `db:"detected_bees"`
-	BeeInteractions *int
+	BeeInteractions *int      `db:"bee_interactions"`
 }
 
 type PopulationMetricRecord struct {
