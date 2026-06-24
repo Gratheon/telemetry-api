@@ -1,0 +1,450 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gratheon Telemetry API",
+    "version": "1.0.0",
+    "description": "Versioned REST API used by edge devices to submit hive sensor telemetry and entrance movement metrics. GraphQL remains the preferred API for web-app integrations."
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "servers": [
+    {
+      "url": "https://telemetry.gratheon.com",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:8600",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health"
+    },
+    {
+      "name": "Telemetry ingestion"
+    },
+    {
+      "name": "Entrance observer"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Gratheon API token",
+        "description": "API tokens are managed in the Gratheon web app account settings."
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "hello": {
+            "type": "string",
+            "example": "world"
+          }
+        },
+        "required": ["hello"]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "OK"
+          }
+        },
+        "required": ["message"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Bad Request: hiveId not provided"
+          }
+        },
+        "required": ["error"]
+      },
+      "MetricFields": {
+        "type": "object",
+        "description": "At least one metric field must be provided.",
+        "properties": {
+          "temperatureCelsius": {
+            "type": "number",
+            "format": "double",
+            "example": 25.5
+          },
+          "humidityPercent": {
+            "type": "number",
+            "format": "double",
+            "example": 65
+          },
+          "weightKg": {
+            "type": "number",
+            "format": "double",
+            "example": 45.2
+          }
+        },
+        "minProperties": 1,
+        "additionalProperties": false
+      },
+      "MetricInput": {
+        "type": "object",
+        "properties": {
+          "hiveId": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "description": "Hive identifier. The service accepts both string and numeric JSON IDs.",
+            "example": "hive-123"
+          },
+          "fields": {
+            "$ref": "#/components/schemas/MetricFields"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp in seconds. If omitted, server time is used.",
+            "example": 1717238400
+          },
+          "dedupeKey": {
+            "type": "string",
+            "description": "Optional idempotency key used by devices when retrying the same measurement.",
+            "example": "device-7:1717238400"
+          }
+        },
+        "required": ["hiveId", "fields"],
+        "additionalProperties": false
+      },
+      "MetricBatchInput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MetricInput"
+          },
+          {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/MetricInput"
+            }
+          }
+        ]
+      },
+      "EntranceMovementInput": {
+        "type": "object",
+        "properties": {
+          "hiveId": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "example": "hive-123"
+          },
+          "boxId": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "example": "box-entrance-1"
+          },
+          "beesOut": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "example": 42
+          },
+          "beesIn": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "example": 39
+          },
+          "netFlow": {
+            "type": "number",
+            "format": "double",
+            "example": -3
+          },
+          "avgSpeed": {
+            "type": "number",
+            "format": "double",
+            "description": "Average bee speed in pixels per frame.",
+            "example": 7.4
+          },
+          "p95Speed": {
+            "type": "number",
+            "format": "double",
+            "description": "95th percentile bee speed in pixels per frame.",
+            "example": 14.1
+          },
+          "stationaryBees": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 5
+          },
+          "detectedBees": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 81
+          },
+          "beeInteractions": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 12
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp in seconds. If omitted, server time is used.",
+            "example": 1717238400
+          }
+        },
+        "required": ["hiveId", "boxId", "beesOut", "beesIn"],
+        "additionalProperties": false
+      },
+      "EntranceMovementBatchInput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EntranceMovementInput"
+          },
+          {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/EntranceMovementInput"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Check service health",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service and database are healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/iot/v1/metrics": {
+      "post": {
+        "tags": ["Telemetry ingestion"],
+        "summary": "Submit IoT sensor metrics",
+        "description": "Accepts either a single metric object or an array of metric objects. Intended for edge devices such as hive scales and environmental sensors.",
+        "operationId": "submitIoTMetrics",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricBatchInput"
+              },
+              "examples": {
+                "single": {
+                  "summary": "Single measurement",
+                  "value": {
+                    "hiveId": "hive-123",
+                    "timestamp": 1717238400,
+                    "dedupeKey": "device-7:1717238400",
+                    "fields": {
+                      "temperatureCelsius": 25.5,
+                      "humidityPercent": 65,
+                      "weightKg": 45.2
+                    }
+                  }
+                },
+                "batch": {
+                  "summary": "Batch measurements",
+                  "value": [
+                    {
+                      "hiveId": "hive-123",
+                      "timestamp": 1717238400,
+                      "fields": {
+                        "temperatureCelsius": 25.5
+                      }
+                    },
+                    {
+                      "hiveId": "hive-123",
+                      "timestamp": 1717238460,
+                      "fields": {
+                        "humidityPercent": 65.4
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Metrics accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entrance/v1/movement": {
+      "post": {
+        "tags": ["Entrance observer"],
+        "summary": "Submit entrance movement metrics",
+        "description": "Accepts either a single movement object or an array of movement objects produced by entrance camera edge processing.",
+        "operationId": "submitEntranceMovement",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntranceMovementBatchInput"
+              },
+              "examples": {
+                "single": {
+                  "summary": "Single movement aggregate",
+                  "value": {
+                    "hiveId": "hive-123",
+                    "boxId": "box-entrance-1",
+                    "beesOut": 42,
+                    "beesIn": 39,
+                    "netFlow": -3,
+                    "avgSpeed": 7.4,
+                    "p95Speed": 14.1,
+                    "stationaryBees": 5,
+                    "detectedBees": 81,
+                    "beeInteractions": 12,
+                    "timestamp": 1717238400
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Movement metrics accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

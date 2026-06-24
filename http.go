@@ -32,6 +32,13 @@ func newHTTPHandler(cfg config, store telemetry.Store, logrusInstance *logrus.Lo
 	router.Use(logger.NewStructuredLogger(logrusInstance))
 
 	router.Get("/", rootHandler)
+	// Serve the OpenAPI document from the same binary as the handlers so docs can
+	// be updated directly from the microservice contract.
+	router.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(openapiSpec)
+	})
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
