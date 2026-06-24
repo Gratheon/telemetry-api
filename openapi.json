@@ -5,7 +5,6 @@
     "version": "1.0.0",
     "description": "Versioned REST API used by edge devices to submit hive sensor telemetry and entrance movement metrics. GraphQL remains the preferred API for web-app integrations."
   },
-  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "servers": [
     {
       "url": "https://telemetry.gratheon.com",
