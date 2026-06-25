@@ -13,14 +13,27 @@ const swaggerUIDocsHTML = `<!doctype html>
     body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     .topbar { display: none; }
     .docs-header { padding: 18px 24px; border-bottom: 1px solid #ddd; }
-    .docs-header h1 { margin: 0 0 8px; font-size: 24px; }
     .docs-header p { margin: 0 0 12px; max-width: 860px; line-height: 1.5; }
     .docs-header a { margin-right: 12px; color: #111; }
+    /* When Swagger UI is embedded in gratheon.com docs, the parent page already
+       provides the single page heading and intro links. Hide local headings to
+       avoid repeating "Telemetry API" three times above the endpoints. */
+    html.embedded-docs .docs-header,
+    html.embedded-docs .swagger-ui .info .title {
+      display: none;
+    }
+    html.embedded-docs .swagger-ui .info {
+      margin: 24px 0;
+    }
   </style>
+  <script>
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('embedded-docs');
+    }
+  </script>
 </head>
 <body>
   <header class="docs-header">
-    <h1>Gratheon Telemetry REST API</h1>
     <p>This Swagger UI is hosted by telemetry-api itself, so the documentation follows the service-owned OpenAPI contract. Import the OpenAPI URL into Postman, Bruno, or Insomnia to generate client collections.</p>
     <a href="/openapi.json">OpenAPI JSON</a>
     <a href="https://github.com/Gratheon/telemetry-api">GitHub</a>
