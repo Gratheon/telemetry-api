@@ -1,0 +1,23 @@
+.git
+.github
+.idea
+.dccache
+
+# Built binary and local runtime artifacts
+telemetry-api
+influxdb
+test-results/
+
+# Local config overrides (example/test configs are copied intentionally)
+config/config.dev.json
+config/config.prod.json
+
+Dockerfile.dev
+docker-compose*.yml
+README.md
+CONTRIBUTING.md
+LICENSE-*.md
+justfile
+restart.sh
+test/
+.DS_Store
