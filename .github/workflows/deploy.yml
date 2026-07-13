@@ -23,3 +23,7 @@ jobs:
       - name: restart
         working-directory: /www/telemetry-api/
         run: chmod +x restart.sh && ./restart.sh
+
+      - name: Verify production deployment
+        working-directory: /www/telemetry-api/
+        run: ./scripts/verify-production-deployment.sh

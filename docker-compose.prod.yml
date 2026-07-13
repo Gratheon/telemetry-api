@@ -14,5 +14,7 @@ services:
       - OTEL_SERVICE_NAME=telemetry-api
       - OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=prod,service.namespace=gratheon
       - HYPERDX_API_KEY=${HYPERDX_API_KEY:-}
+    volumes:
+      - ./config/config.prod.json:/app/config/config.prod.json:ro
     restart: always
     network_mode: host

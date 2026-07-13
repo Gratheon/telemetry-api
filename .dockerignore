@@ -10,7 +10,7 @@ test-results/
 
 # Local config overrides (example/test configs are copied intentionally)
 config/config.dev.json
-config/config.prod.json
+config/config.prod.json*
 
 Dockerfile.dev
 docker-compose*.yml
