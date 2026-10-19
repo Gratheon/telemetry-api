@@ -23,10 +23,12 @@ func newPostgresStore(cfg postgresConfig) (*postgresStore, error) {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
+	// Sized by config: every service shares one managed Postgres cluster with ~22 usable slots,
+	// so idle connections are released quickly instead of being held for minutes
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetConnMaxLifetime(5 * time.Minute)
-	db.SetConnMaxIdleTime(2 * time.Minute)
+	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
 	return &postgresStore{db: db}, nil
 }

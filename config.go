@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -16,6 +17,11 @@ type postgresConfig struct {
 	Database string
 	SSLMode  string
 	DSN      string
+
+	// Pool limits: the managed cluster is shared by several services with a small max_connections
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxIdleTime time.Duration
 }
 
 func (c postgresConfig) ConnectionString() string {
@@ -93,6 +99,10 @@ func readConfig() (config, error) {
 			Database: v.GetString("postgres.database"),
 			SSLMode:  v.GetString("postgres.sslmode"),
 			DSN:      v.GetString("postgres.dsn"),
+
+			MaxOpenConns:    v.GetInt("postgres.max_open_conns"),
+			MaxIdleConns:    v.GetInt("postgres.max_idle_conns"),
+			ConnMaxIdleTime: v.GetDuration("postgres.conn_max_idle_time"),
 		},
 	}
 
@@ -115,6 +125,9 @@ func setConfigDefaults(v *viper.Viper) {
 	v.SetDefault("postgres.database", "telemetry-api")
 	v.SetDefault("postgres.sslmode", "disable")
 	v.SetDefault("postgres.dsn", "")
+	v.SetDefault("postgres.max_open_conns", 3)
+	v.SetDefault("postgres.max_idle_conns", 1)
+	v.SetDefault("postgres.conn_max_idle_time", "30s")
 }
 
 func overrideConfigFromEnv(cfg *config) {
@@ -165,6 +178,25 @@ func overrideConfigFromEnv(cfg *config) {
 	}
 	if value := strings.TrimSpace(os.Getenv("DB_DSN")); value != "" {
 		cfg.Postgres.DSN = value
+	}
+	cfg.Postgres.MaxOpenConns = getenvInt("DB_MAX_OPEN_CONNS", cfg.Postgres.MaxOpenConns)
+	cfg.Postgres.MaxIdleConns = getenvInt("DB_MAX_IDLE_CONNS", cfg.Postgres.MaxIdleConns)
+	if value := strings.TrimSpace(os.Getenv("DB_CONN_MAX_IDLE_TIME")); value != "" {
+		if parsed, err := time.ParseDuration(value); err == nil {
+			cfg.Postgres.ConnMaxIdleTime = parsed
+		}
+	}
+
+	// database/sql treats MaxOpenConns <= 0 as unlimited, and a bare JSON number becomes nanoseconds:
+	// fall back to safe values instead of silently dropping the cap on the shared cluster
+	if cfg.Postgres.MaxOpenConns < 1 {
+		cfg.Postgres.MaxOpenConns = 3
+	}
+	if cfg.Postgres.MaxIdleConns < 0 {
+		cfg.Postgres.MaxIdleConns = 1
+	}
+	if cfg.Postgres.ConnMaxIdleTime < time.Second {
+		cfg.Postgres.ConnMaxIdleTime = 30 * time.Second
 	}
 }
 

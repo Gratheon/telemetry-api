@@ -12,6 +12,9 @@
     "user": "test",
     "password": "test",
     "database": "telemetry-api",
-    "sslmode": "disable"
+    "sslmode": "disable",
+    "max_open_conns": 3,
+    "max_idle_conns": 1,
+    "conn_max_idle_time": "30s"
   }
 }
