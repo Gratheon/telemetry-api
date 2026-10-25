@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // content hash for the schema version, not security
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
@@ -25,7 +25,7 @@ func registerSchema(ctx context.Context, cfg config, schema string) {
 		return
 	}
 
-	sum := sha1.Sum([]byte(schema))
+	sum := sha1.Sum([]byte(schema)) //nolint:gosec // content hash for the schema version, not security
 	version := hex.EncodeToString(sum[:])
 	if cfg.EnvironmentID == "dev" {
 		version = "latest"
